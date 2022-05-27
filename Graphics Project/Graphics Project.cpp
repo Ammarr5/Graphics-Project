@@ -1,180 +1,233 @@
-// Graphics Project.cpp : Defines the entry point for the application.
-//
+#define UNICODE
 
-#include "framework.h"
-#include "Graphics Project.h"
+#include <Windows.h>
+#include <gl\GL.h>
+#include <gl\GLu.h>
+#include <math.h>
+#include <iostream>
+#include "menu_items.h"
 
-#define MAX_LOADSTRING 100
+using namespace std;
+#pragma comment(lib,"opengl32")
+#pragma comment(lib,"glu32")
 
-// Global Variables:
-HINSTANCE hInst;                                // current instance
-WCHAR szTitle[MAX_LOADSTRING];                  // The title bar text
-WCHAR szWindowClass[MAX_LOADSTRING];            // the main window class name
+void populateMenus(HWND);
 
-// Forward declarations of functions included in this code module:
-ATOM                MyRegisterClass(HINSTANCE hInstance);
-BOOL                InitInstance(HINSTANCE, int);
-LRESULT CALLBACK    WndProc(HWND, UINT, WPARAM, LPARAM);
-INT_PTR CALLBACK    About(HWND, UINT, WPARAM, LPARAM);
-
-int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
-                     _In_opt_ HINSTANCE hPrevInstance,
-                     _In_ LPWSTR    lpCmdLine,
-                     _In_ int       nCmdShow)
+void swap(int& x1, int& y1, int& x2, int& y2)
 {
-    UNREFERENCED_PARAMETER(hPrevInstance);
-    UNREFERENCED_PARAMETER(lpCmdLine);
+	int tmp = x1;
+	x1 = x2;
+	x2 = tmp;
+	tmp = y1;
+	y1 = y2;
+	y2 = tmp;
+}
+int Round(double x)
+{
+	return (int)(x + 0.5);
+}
 
-    // TODO: Place code here.
+// These methods were provided on blackboard, I left them as an opengl example (will be implemented inside classes later)
+void DrawLine1(int x1, int y1, int x2, int y2)
+{
+	glBegin(GL_POINTS);
+	glColor3f(1, 0, 0);
+	int dx = x2 - x1;
+	int dy = y2 - y1;
+	if (abs(dy) <= abs(dx))
+	{
+		if (x1 > x2)swap(x1, y1, x2, y2);
+		glVertex2d(x1, y1);
+		int x = x1;
+		while (x < x2)
+		{
+			x++;
+			double y = y1 + (double)(x - x1)*dy / dx;
+			glVertex2d(x, y);
+		}
+	}
+	else {
+		if (y1 > y2)swap(x1, y1, x2, y2);
+		glVertex2d(x1, y1);
+		int y = y1;
+		while (y < y2)
+		{
+			y++;
+			double x = x1 + (double)(y - y1)*dx / dy;
+			glVertex2d(x, y);
+		}
+	}
+	glEnd();
+	glFlush();
+}
+void Draw8Points(int xc, int yc, int x, int y)
+{
+	glVertex2d(xc + x, yc + y);
+	glVertex2d(xc + x, yc - y);
+	glVertex2d(xc - x, yc - y);
+	glVertex2d(xc - x, yc + y);
+	glVertex2d(xc + y, yc + x);
+	glVertex2d(xc + y, yc - x);
+	glVertex2d(xc - y, yc - x);
+	glVertex2d(xc - y, yc + x);
+}
+void DrawCircle1(int xc, int yc, int R)
+{
+	glBegin(GL_POINTS);
+	glColor3f(0, 0, 1);
+	int x = 0;
+	double y = R;
+	Draw8Points(xc, yc, 0, R);
+	while (x < y)
+	{
+		x++;
+		y = sqrt((double)R*R - x * x);
+		Draw8Points(xc, yc, x, Round(y));
+	}
+	glEnd();
+	glFlush();
+}
+HGLRC InitOpenGl(HDC hdc)
+{
+	PIXELFORMATDESCRIPTOR pfd = {
+		sizeof(PIXELFORMATDESCRIPTOR),   // size of this pfd  
+		1,                     // version number  
+		PFD_DRAW_TO_WINDOW |   // support window  
+		PFD_SUPPORT_OPENGL |   // support OpenGL  
+		0,      // double buffered  
+		PFD_TYPE_RGBA,         // RGBA type  
+		24,                    // 24-bit color depth  
+		0, 0, 0, 0, 0, 0,      // color bits ignored  
+		0,                     // no alpha buffer  
+		0,                     // shift bit ignored  
+		0,                     // no accumulation buffer  
+		0, 0, 0, 0,            // accum bits ignored  
+		32,                    // 32-bit z-buffer  
+		0,                     // no stencil buffer  
+		0,                     // no auxiliary buffer  
+		PFD_MAIN_PLANE,        // main layer  
+		0,                     // reserved  
+		0, 0, 0                // layer masks ignored  
+	};
+	int  iPixelFormat;
+	iPixelFormat = ChoosePixelFormat(hdc, &pfd);
+	SetPixelFormat(hdc, iPixelFormat, &pfd);
+	HGLRC glrc = wglCreateContext(hdc);
+	wglMakeCurrent(hdc, glrc);
+	return glrc;
+}
+void AdjustWindowFor2D(HDC hdc, int w, int h)
+{
+	glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
+	gluOrtho2D(0, w, h, 0);
+	glMatrixMode(GL_MODELVIEW);
+	glViewport(0, 0, w, h);
+	glClearColor(0.75, 0.75, 0.75, 0);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+}
+void EndOpenGl(HGLRC glrc)
+{
+	wglMakeCurrent(NULL, NULL);
+	wglDeleteContext(glrc);
+}
+LRESULT WINAPI MyWndProc(HWND hwnd, UINT mcode, WPARAM wp, LPARAM lp)
+{
+	static HDC hdc;
+	static HGLRC glrc;
+	static int points[2][2];
+	static int i = 0;
+	switch (mcode)
+	{
+	case WM_CREATE:
+		hdc = GetDC(hwnd);
+		populateMenus(hwnd);
+		glrc = InitOpenGl(hdc);
+		break;
+	case WM_SIZE:
+		AdjustWindowFor2D(hdc, LOWORD(lp), HIWORD(lp));
+		break;
+	case WM_LBUTTONDOWN:
+		DrawCircle1(LOWORD(lp), HIWORD(lp), 100);
+		points[i][0] = LOWORD(lp);
+		points[i][1] = HIWORD(lp);
+		i++;
+		if (i == 2) {
+			i = 0;
+			DrawLine1(points[0][0], points[0][1], points[1][0], points[1][1]);
+		}
+		glFlush();
+		break;
+	case WM_COMMAND: // When menu option is selected
+		switch (LOWORD(wp)) { // switch for various menu options
+		case M_WHITE_BG:
+			cout << "PAAM!! white bg bom el takh";
+			break;
+		}
 
-    // Initialize global strings
-    LoadStringW(hInstance, IDS_APP_TITLE, szTitle, MAX_LOADSTRING);
-    LoadStringW(hInstance, IDC_GRAPHICSPROJECT, szWindowClass, MAX_LOADSTRING);
-    MyRegisterClass(hInstance);
-
-    // Perform application initialization:
-    if (!InitInstance (hInstance, nCmdShow))
-    {
-        return FALSE;
-    }
-
-    HACCEL hAccelTable = LoadAccelerators(hInstance, MAKEINTRESOURCE(IDC_GRAPHICSPROJECT));
-
-    MSG msg;
-
-    // Main message loop:
-    while (GetMessage(&msg, nullptr, 0, 0))
-    {
-        if (!TranslateAccelerator(msg.hwnd, hAccelTable, &msg))
-        {
-            TranslateMessage(&msg);
-            DispatchMessage(&msg);
-        }
-    }
-
-    return (int) msg.wParam;
+		break;
+	case WM_CLOSE:
+		DestroyWindow(hwnd);
+		break;
+	case WM_DESTROY:
+		EndOpenGl(glrc);
+		ReleaseDC(hwnd, hdc);
+		PostQuitMessage(0);
+		break;
+	default: return DefWindowProc(hwnd, mcode, wp, lp);
+	}
+	return 0;
 }
 
 
+// function to add menus to window once created
+void populateMenus(HWND hwnd) {
 
-//
-//  FUNCTION: MyRegisterClass()
-//
-//  PURPOSE: Registers the window class.
-//
-ATOM MyRegisterClass(HINSTANCE hInstance)
-{
-    WNDCLASSEXW wcex;
+	HMENU hMenubar; // Strip that holds all menus (which is one in our case call "menu")
+	HMENU hMenu;
+	HMENU hLineMenu; // Line submenu
 
-    wcex.cbSize = sizeof(WNDCLASSEX);
+	hMenubar = CreateMenu();
+	hMenu = CreateMenu();
+	hLineMenu = CreateMenu();
 
-    wcex.style          = CS_HREDRAW | CS_VREDRAW;
-    wcex.lpfnWndProc    = WndProc;
-    wcex.cbClsExtra     = 0;
-    wcex.cbWndExtra     = 0;
-    wcex.hInstance      = hInstance;
-    wcex.hIcon          = LoadIcon(hInstance, MAKEINTRESOURCE(IDI_GRAPHICSPROJECT));
-    wcex.hCursor        = LoadCursor(nullptr, IDC_ARROW);
-    wcex.hbrBackground  = (HBRUSH)(COLOR_WINDOW+1);
-    wcex.lpszMenuName   = MAKEINTRESOURCEW(IDC_GRAPHICSPROJECT);
-    wcex.lpszClassName  = szWindowClass;
-    wcex.hIconSm        = LoadIcon(wcex.hInstance, MAKEINTRESOURCE(IDI_SMALL));
+	AppendMenuW(hMenu, MF_STRING, M_SAVE, L"&Save");
+	AppendMenuW(hMenu, MF_STRING, M_LOAD, L"&Load");
+	AppendMenuW(hMenu, MF_SEPARATOR, 0, NULL);
+	AppendMenuW(hMenu, MF_STRING, M_WHITE_BG, L"&White Background");
+	AppendMenuW(hMenu, MF_STRING, M_CLEAR_SCREEN, L"&Clear Screen");
+	AppendMenuW(hMenu, MF_STRING | MF_POPUP, (UINT_PTR)hLineMenu, L"&Line"); // Line submenu nested to hLineMenu
+	AppendMenuW(hLineMenu, MF_STRING, M_LINE_DDA, L"&DDA"); // Notice now we append to hLineMenu not hMenu
+	AppendMenuW(hLineMenu, MF_STRING, M_LINE_MP, L"&Midpoint");
+	AppendMenuW(hLineMenu, MF_STRING, M_LINE_PARAM, L"&Parametric");
 
-    return RegisterClassExW(&wcex);
+
+
+	AppendMenuW(hMenubar, MF_POPUP, (UINT_PTR)hMenu, L"&Menu");
+	SetMenu(hwnd, hMenubar);
 }
 
-//
-//   FUNCTION: InitInstance(HINSTANCE, int)
-//
-//   PURPOSE: Saves instance handle and creates main window
-//
-//   COMMENTS:
-//
-//        In this function, we save the instance handle in a global variable and
-//        create and display the main program window.
-//
-BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
+int APIENTRY WinMain(HINSTANCE hinst, HINSTANCE pinst, LPSTR cmd, int nsh)
 {
-   hInst = hInstance; // Store instance handle in our global variable
-
-   HWND hWnd = CreateWindowW(szWindowClass, szTitle, WS_OVERLAPPEDWINDOW,
-      CW_USEDEFAULT, 0, CW_USEDEFAULT, 0, nullptr, nullptr, hInstance, nullptr);
-
-   if (!hWnd)
-   {
-      return FALSE;
-   }
-
-   ShowWindow(hWnd, nCmdShow);
-   UpdateWindow(hWnd);
-
-   return TRUE;
-}
-
-//
-//  FUNCTION: WndProc(HWND, UINT, WPARAM, LPARAM)
-//
-//  PURPOSE: Processes messages for the main window.
-//
-//  WM_COMMAND  - process the application menu
-//  WM_PAINT    - Paint the main window
-//  WM_DESTROY  - post a quit message and return
-//
-//
-LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
-{
-    switch (message)
-    {
-    case WM_COMMAND:
-        {
-            int wmId = LOWORD(wParam);
-            // Parse the menu selections:
-            switch (wmId)
-            {
-            case IDM_ABOUT:
-                DialogBox(hInst, MAKEINTRESOURCE(IDD_ABOUTBOX), hWnd, About);
-                break;
-            case IDM_EXIT:
-                DestroyWindow(hWnd);
-                break;
-            default:
-                return DefWindowProc(hWnd, message, wParam, lParam);
-            }
-        }
-        break;
-    case WM_PAINT:
-        {
-            PAINTSTRUCT ps;
-            HDC hdc = BeginPaint(hWnd, &ps);
-            // TODO: Add any drawing code that uses hdc here...
-            EndPaint(hWnd, &ps);
-        }
-        break;
-    case WM_DESTROY:
-        PostQuitMessage(0);
-        break;
-    default:
-        return DefWindowProc(hWnd, message, wParam, lParam);
-    }
-    return 0;
-}
-
-// Message handler for about box.
-INT_PTR CALLBACK About(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
-{
-    UNREFERENCED_PARAMETER(lParam);
-    switch (message)
-    {
-    case WM_INITDIALOG:
-        return (INT_PTR)TRUE;
-
-    case WM_COMMAND:
-        if (LOWORD(wParam) == IDOK || LOWORD(wParam) == IDCANCEL)
-        {
-            EndDialog(hDlg, LOWORD(wParam));
-            return (INT_PTR)TRUE;
-        }
-        break;
-    }
-    return (INT_PTR)FALSE;
+	WNDCLASS wc;
+	wc.cbClsExtra = wc.cbWndExtra = 0;
+	wc.hbrBackground = (HBRUSH)GetStockObject(LTGRAY_BRUSH);
+	wc.hCursor = LoadCursor(NULL, IDC_ARROW);
+	wc.hIcon = LoadIcon(NULL, IDI_APPLICATION);
+	wc.hInstance = hinst;
+	wc.lpfnWndProc = MyWndProc;
+	wc.lpszClassName = L"MyClass";
+	wc.lpszMenuName = NULL;
+	wc.style = CS_HREDRAW | CS_VREDRAW;
+	RegisterClass(&wc);
+	HWND hwnd = CreateWindow(L"MyClass", L"My First Window", WS_OVERLAPPEDWINDOW | WS_CLIPCHILDREN | WS_CLIPSIBLINGS, 0, 0, 800, 600, NULL, NULL, hinst, 0);
+	ShowWindow(hwnd, nsh);
+	UpdateWindow(hwnd);
+	MSG msg;
+	while (GetMessage(&msg, NULL, 0, 0) > 0)
+	{
+		TranslateMessage(&msg);
+		DispatchMessage(&msg);
+	}
+	return 0;
 }

@@ -27,6 +27,9 @@
     <ClInclude Include="Graphics Project.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="menu_items.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Graphics Project.cpp">
