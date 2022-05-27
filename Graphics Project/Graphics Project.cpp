@@ -1,4 +1,6 @@
+#ifndef UNICODE
 #define UNICODE
+#endif // !UNICODE
 
 #include <Windows.h>
 #include <gl\GL.h>
@@ -6,10 +8,12 @@
 #include <math.h>
 #include <iostream>
 #include "menu_items.h"
+#include "Line.h"
+#include "LineDrawerDDA.h"
 
-using namespace std;
 #pragma comment(lib,"opengl32")
 #pragma comment(lib,"glu32")
+using namespace std;
 
 void populateMenus(HWND);
 
@@ -154,7 +158,7 @@ LRESULT WINAPI MyWndProc(HWND hwnd, UINT mcode, WPARAM wp, LPARAM lp)
 		i++;
 		if (i == 2) {
 			i = 0;
-			DrawLine1(points[0][0], points[0][1], points[1][0], points[1][1]);
+			new Line(points[0][0], points[0][1], points[1][0], points[1][1], new LineDrawerDDA());
 		}
 		glFlush();
 		break;

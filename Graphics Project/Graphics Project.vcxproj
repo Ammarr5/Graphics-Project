@@ -153,12 +153,24 @@
   <ItemGroup>
     <ClInclude Include="framework.h" />
     <ClInclude Include="Graphics Project.h" />
+    <ClInclude Include="Line.h" />
+    <ClInclude Include="LineData.h" />
+    <ClInclude Include="LineDrawer.h" />
     <ClInclude Include="menu_items.h" />
     <ClInclude Include="Resource.h" />
+    <ClInclude Include="Shape.h" />
+    <ClInclude Include="ShapeData.h" />
+    <ClInclude Include="ShapeDrawer.h" />
     <ClInclude Include="targetver.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Graphics Project.cpp" />
+    <ClCompile Include="Line.cpp" />
+    <ClCompile Include="LineData.cpp" />
+    <ClCompile Include="LineDrawerDDA.cpp" />
+    <ClCompile Include="Shape.cpp" />
+    <ClCompile Include="ShapeData.cpp" />
+    <ClCompile Include="ShapeDrawer.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Graphics Project.rc" />
