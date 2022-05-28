@@ -152,7 +152,7 @@ LRESULT WINAPI MyWndProc(HWND hwnd, UINT mcode, WPARAM wp, LPARAM lp)
 		AdjustWindowFor2D(hdc, LOWORD(lp), HIWORD(lp));
 		break;
 	case WM_LBUTTONDOWN:
-		DrawCircle1(LOWORD(lp), HIWORD(lp), 100);
+		//DrawCircle1(LOWORD(lp), HIWORD(lp), 100);
 		points[i][0] = LOWORD(lp);
 		points[i][1] = HIWORD(lp);
 		i++;
