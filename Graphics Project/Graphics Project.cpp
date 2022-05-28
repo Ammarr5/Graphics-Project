@@ -71,7 +71,6 @@ LRESULT WINAPI MyWndProc(HWND hwnd, UINT mcode, WPARAM wp, LPARAM lp)
 	static HGLRC glrc;
     static bool isLine = false;
     enum LineType{DDA,Midpoint,Parametric};
-    static ShapeDrawer* shapeDrawer = nullptr;
     static LineType linetype;
 	static int points[2][2];
 	static int i = 0;
@@ -93,7 +92,15 @@ LRESULT WINAPI MyWndProc(HWND hwnd, UINT mcode, WPARAM wp, LPARAM lp)
             i++;
             if (i == 2) {
                 i = 0;
-                line = new Line(points[0][0], points[0][1], points[1][0], points[1][1], (LineDrawer*)shapeDrawer);
+                if(linetype==DDA) {
+                    line = new Line(points[0][0], points[0][1], points[1][0], points[1][1], new LineDrawerDDA());
+                }
+                else if(linetype==Midpoint){
+                    line = new Line(points[0][0], points[0][1], points[1][0], points[1][1], new LineDrawerMidpoint());
+                }
+                else if(linetype==Parametric){
+                    line = new Line(points[0][0], points[0][1], points[1][0], points[1][1], new LineDrawerParametric());
+                }
                 shapes.push_back(*line);
                 glFlush();
             }
@@ -101,21 +108,24 @@ LRESULT WINAPI MyWndProc(HWND hwnd, UINT mcode, WPARAM wp, LPARAM lp)
 		break;
 	case WM_COMMAND: // When menu option is selected
 		switch (LOWORD(wp)) { // switch for various menu options
-		case M_WHITE_BG:
-			cout << "PAAM!! white bg bom el takh";
-			break;
-        case M_LINE_DDA:
-            shapeDrawer = new LineDrawerDDA();
-            isLine = true;
-            break;
-        case M_LINE_MP:
-            shapeDrawer = new LineDrawerMidpoint();
-            isLine = true;
-            break;
-        case M_LINE_PARAM:
-            shapeDrawer = new LineDrawerParametric();
-            isLine = true;
-            break;
+            case M_WHITE_BG:
+                cout << "PAAM!! white bg bom el takh";
+                break;
+            case M_LINE_DDA:
+                linetype = DDA;
+                isLine = true;
+                break;
+            case M_LINE_MP:
+                linetype = Midpoint;
+                isLine = true;
+                break;
+            case M_LINE_PARAM:
+                linetype = Parametric;
+                isLine = true;
+                break;
+            case M_COLOR:
+
+                break;
         }
 		break;
 	case WM_CLOSE:
@@ -145,6 +155,7 @@ void populateMenus(HWND hwnd) {
 	AppendMenuW(hMenu, MF_STRING, M_SAVE, L"&Save");
 	AppendMenuW(hMenu, MF_STRING, M_LOAD, L"&Load");
 	AppendMenuW(hMenu, MF_SEPARATOR, 0, NULL);
+    AppendMenuW(hMenu, MF_STRING, M_COLOR, L"&Select Color");
 	AppendMenuW(hMenu, MF_STRING, M_WHITE_BG, L"&White Background");
 	AppendMenuW(hMenu, MF_STRING, M_CLEAR_SCREEN, L"&Clear Screen");
 	AppendMenuW(hMenu, MF_STRING | MF_POPUP, (UINT_PTR)hLineMenu, L"&Line"); // Line submenu nested to hLineMenu
