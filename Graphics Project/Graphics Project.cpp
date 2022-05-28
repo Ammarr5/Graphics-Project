@@ -10,6 +10,8 @@
 #include "menu_items.h"
 #include "Line.h"
 #include "LineDrawerDDA.h"
+#include "LineDrawerMidpoint.h"
+#include "LineDrawerParametric.h"
 #include <vector>
 
 #pragma comment(lib,"opengl32")
@@ -68,6 +70,8 @@ LRESULT WINAPI MyWndProc(HWND hwnd, UINT mcode, WPARAM wp, LPARAM lp)
 	static HDC hdc;
 	static HGLRC glrc;
     static bool isLine = false;
+    enum LineType{DDA,Midpoint,Parametric};
+    static LineType linetype;
 	static int points[2][2];
 	static int i = 0;
 	switch (mcode)
@@ -82,14 +86,22 @@ LRESULT WINAPI MyWndProc(HWND hwnd, UINT mcode, WPARAM wp, LPARAM lp)
 		break;
 	case WM_LBUTTONDOWN:
         if(isLine) {
+            Shape *line;
             points[i][0] = LOWORD(lp);
             points[i][1] = HIWORD(lp);
             i++;
             if (i == 2) {
                 i = 0;
-                Shape *line = new Line(points[0][0], points[0][1], points[1][0], points[1][1], new LineDrawerDDA());
+                if(linetype==DDA) {
+                    line = new Line(points[0][0], points[0][1], points[1][0], points[1][1], new LineDrawerDDA());
+                }
+                else if(linetype==Midpoint){
+                    line = new Line(points[0][0], points[0][1], points[1][0], points[1][1], new LineDrawerMidpoint());
+                }
+                else if(linetype==Parametric){
+                    line = new Line(points[0][0], points[0][1], points[1][0], points[1][1], new LineDrawerParametric());
+                }
                 shapes.push_back(*line);
-//                isLine = false;
                 glFlush();
             }
         }
@@ -100,9 +112,18 @@ LRESULT WINAPI MyWndProc(HWND hwnd, UINT mcode, WPARAM wp, LPARAM lp)
 			cout << "PAAM!! white bg bom el takh";
 			break;
         case M_LINE_DDA:
+            linetype=DDA;
             isLine = true;
             break;
-		}
+        case M_LINE_MP:
+            linetype=Midpoint;
+            isLine = true;
+            break;
+        case M_LINE_PARAM:
+            linetype=Parametric;
+            isLine = true;
+            break;
+        }
 		break;
 	case WM_CLOSE:
 		DestroyWindow(hwnd);
@@ -116,7 +137,6 @@ LRESULT WINAPI MyWndProc(HWND hwnd, UINT mcode, WPARAM wp, LPARAM lp)
 	}
 	return 0;
 }
-
 
 // function to add menus to window once created
 void populateMenus(HWND hwnd) {

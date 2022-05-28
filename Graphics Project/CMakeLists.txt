@@ -24,7 +24,7 @@ add_executable(Graphics_Project
         ShapeData.h
         ShapeDrawer.cpp
         ShapeDrawer.h
-        targetver.h)
+        targetver.h LineDrawerMidpoint.cpp LineDrawerMidpoint.h LineDrawerParametric.cpp LineDrawerParametric.h)
 
 target_link_libraries(Graphics_Project -lOpenGL32 -lfreeGLUT -lglu32)
 
