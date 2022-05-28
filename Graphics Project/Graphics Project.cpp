@@ -71,6 +71,7 @@ LRESULT WINAPI MyWndProc(HWND hwnd, UINT mcode, WPARAM wp, LPARAM lp)
 	static HGLRC glrc;
     static bool isLine = false;
     enum LineType{DDA,Midpoint,Parametric};
+    static ShapeDrawer* shapeDrawer = nullptr;
     static LineType linetype;
 	static int points[2][2];
 	static int i = 0;
@@ -92,15 +93,7 @@ LRESULT WINAPI MyWndProc(HWND hwnd, UINT mcode, WPARAM wp, LPARAM lp)
             i++;
             if (i == 2) {
                 i = 0;
-                if(linetype==DDA) {
-                    line = new Line(points[0][0], points[0][1], points[1][0], points[1][1], new LineDrawerDDA());
-                }
-                else if(linetype==Midpoint){
-                    line = new Line(points[0][0], points[0][1], points[1][0], points[1][1], new LineDrawerMidpoint());
-                }
-                else if(linetype==Parametric){
-                    line = new Line(points[0][0], points[0][1], points[1][0], points[1][1], new LineDrawerParametric());
-                }
+                line = new Line(points[0][0], points[0][1], points[1][0], points[1][1], (LineDrawer*) shapeDrawer);
                 shapes.push_back(*line);
                 glFlush();
             }
@@ -112,14 +105,17 @@ LRESULT WINAPI MyWndProc(HWND hwnd, UINT mcode, WPARAM wp, LPARAM lp)
                 cout << "PAAM!! white bg bom el takh";
                 break;
             case M_LINE_DDA:
+                shapeDrawer = new LineDrawerDDA();
                 linetype = DDA;
                 isLine = true;
                 break;
             case M_LINE_MP:
+                shapeDrawer = new LineDrawerMidpoint();
                 linetype = Midpoint;
                 isLine = true;
                 break;
             case M_LINE_PARAM:
+                shapeDrawer = new LineDrawerParametric();
                 linetype = Parametric;
                 isLine = true;
                 break;
