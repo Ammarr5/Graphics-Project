@@ -139,6 +139,7 @@ LRESULT WINAPI MyWndProc(HWND hwnd, UINT mcode, WPARAM wp, LPARAM lp)
 {
 	static HDC hdc;
 	static HGLRC glrc;
+    static bool isLine = false;
 	static int points[2][2];
 	static int i = 0;
 	switch (mcode)
@@ -152,21 +153,26 @@ LRESULT WINAPI MyWndProc(HWND hwnd, UINT mcode, WPARAM wp, LPARAM lp)
 		AdjustWindowFor2D(hdc, LOWORD(lp), HIWORD(lp));
 		break;
 	case WM_LBUTTONDOWN:
-		//DrawCircle1(LOWORD(lp), HIWORD(lp), 100);
-		points[i][0] = LOWORD(lp);
-		points[i][1] = HIWORD(lp);
-		i++;
-		if (i == 2) {
-			i = 0;
-			new Line(points[0][0], points[0][1], points[1][0], points[1][1], new LineDrawerDDA());
-		}
-		glFlush();
+        if(isLine) {
+            points[i][0] = LOWORD(lp);
+            points[i][1] = HIWORD(lp);
+            i++;
+            if (i == 2) {
+                i = 0;
+                new Line(points[0][0], points[0][1], points[1][0], points[1][1], new LineDrawerDDA());
+//                isLine = false;
+                glFlush();
+            }
+        }
 		break;
 	case WM_COMMAND: // When menu option is selected
 		switch (LOWORD(wp)) { // switch for various menu options
 		case M_WHITE_BG:
 			cout << "PAAM!! white bg bom el takh";
 			break;
+        case M_LINE_DDA:
+            isLine = true;
+            break;
 		}
 
 		break;
