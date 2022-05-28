@@ -69,12 +69,11 @@ LRESULT WINAPI MyWndProc(HWND hwnd, UINT mcode, WPARAM wp, LPARAM lp)
 {
 	static HDC hdc;
 	static HGLRC glrc;
-    static bool isLine = false;
-    enum LineType{DDA,Midpoint,Parametric};
     static ShapeDrawer* shapeDrawer = nullptr;
-    static LineType linetype;
 	static int points[2][2];
 	static int i = 0;
+    enum ShapeType{line};
+    static ShapeType shapetype;
 	switch (mcode)
 	{
 	case WM_CREATE:
@@ -86,7 +85,7 @@ LRESULT WINAPI MyWndProc(HWND hwnd, UINT mcode, WPARAM wp, LPARAM lp)
 		AdjustWindowFor2D(hdc, LOWORD(lp), HIWORD(lp));
 		break;
 	case WM_LBUTTONDOWN:
-        if(isLine) {
+        if(shapetype==line) {
             Shape *line;
             points[i][0] = LOWORD(lp);
             points[i][1] = HIWORD(lp);
@@ -102,25 +101,33 @@ LRESULT WINAPI MyWndProc(HWND hwnd, UINT mcode, WPARAM wp, LPARAM lp)
 	case WM_COMMAND: // When menu option is selected
 		switch (LOWORD(wp)) { // switch for various menu options
             case M_WHITE_BG:
-                cout << "PAAM!! white bg bom el takh";
+                cout << "white bg";
                 break;
             case M_LINE_DDA:
                 shapeDrawer = new LineDrawerDDA();
-                linetype = DDA;
-                isLine = true;
+                shapetype = line;
                 break;
             case M_LINE_MP:
                 shapeDrawer = new LineDrawerMidpoint();
-                linetype = Midpoint;
-                isLine = true;
+                shapetype = line;
                 break;
             case M_LINE_PARAM:
                 shapeDrawer = new LineDrawerParametric();
-                linetype = Parametric;
-                isLine = true;
+                shapetype = line;
                 break;
             case M_COLOR:
-
+                CHOOSECOLOR cc;                 // common dialog box structure
+                static COLORREF acrCustClr[16]; // array of custom colors
+                static DWORD rgbCurrent;        // initial color selection
+                ZeroMemory(&cc, sizeof(cc));
+                cc.lStructSize = sizeof(cc);
+                cc.hwndOwner = hwnd;
+                cc.lpCustColors = (LPDWORD) acrCustClr;
+                cc.rgbResult = rgbCurrent;
+                cc.Flags = CC_FULLOPEN | CC_RGBINIT;
+                if (ChooseColor(&cc) == TRUE) {
+                    rgbCurrent = cc.rgbResult;
+                }
                 break;
         }
 		break;
