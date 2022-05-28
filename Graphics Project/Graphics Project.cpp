@@ -108,21 +108,24 @@ LRESULT WINAPI MyWndProc(HWND hwnd, UINT mcode, WPARAM wp, LPARAM lp)
 		break;
 	case WM_COMMAND: // When menu option is selected
 		switch (LOWORD(wp)) { // switch for various menu options
-		case M_WHITE_BG:
-			cout << "PAAM!! white bg bom el takh";
-			break;
-        case M_LINE_DDA:
-            linetype=DDA;
-            isLine = true;
-            break;
-        case M_LINE_MP:
-            linetype=Midpoint;
-            isLine = true;
-            break;
-        case M_LINE_PARAM:
-            linetype=Parametric;
-            isLine = true;
-            break;
+            case M_WHITE_BG:
+                cout << "PAAM!! white bg bom el takh";
+                break;
+            case M_LINE_DDA:
+                linetype = DDA;
+                isLine = true;
+                break;
+            case M_LINE_MP:
+                linetype = Midpoint;
+                isLine = true;
+                break;
+            case M_LINE_PARAM:
+                linetype = Parametric;
+                isLine = true;
+                break;
+            case M_COLOR:
+
+                break;
         }
 		break;
 	case WM_CLOSE:
@@ -152,6 +155,7 @@ void populateMenus(HWND hwnd) {
 	AppendMenuW(hMenu, MF_STRING, M_SAVE, L"&Save");
 	AppendMenuW(hMenu, MF_STRING, M_LOAD, L"&Load");
 	AppendMenuW(hMenu, MF_SEPARATOR, 0, NULL);
+    AppendMenuW(hMenu, MF_STRING, M_COLOR, L"&Select Color");
 	AppendMenuW(hMenu, MF_STRING, M_WHITE_BG, L"&White Background");
 	AppendMenuW(hMenu, MF_STRING, M_CLEAR_SCREEN, L"&Clear Screen");
 	AppendMenuW(hMenu, MF_STRING | MF_POPUP, (UINT_PTR)hLineMenu, L"&Line"); // Line submenu nested to hLineMenu
