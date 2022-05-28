@@ -4,6 +4,6 @@
 class Line: public Shape
 {
 public:
-	Line(int, int, int, int, LineDrawer*);
+	Line(int, int, int, int,COLORREF color, LineDrawer*);
 };
 

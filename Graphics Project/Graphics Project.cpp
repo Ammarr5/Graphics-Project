@@ -70,10 +70,11 @@ LRESULT WINAPI MyWndProc(HWND hwnd, UINT mcode, WPARAM wp, LPARAM lp)
 	static HDC hdc;
 	static HGLRC glrc;
     static ShapeDrawer* shapeDrawer = nullptr;
+    static COLORREF color = RGB(1, 1, 0);
 	static int points[2][2];
 	static int i = 0;
-    enum ShapeType{line};
-    static ShapeType shapetype;
+    enum ShapeType{line, none_selected};
+    static ShapeType shapetype = none_selected;
 	switch (mcode)
 	{
 	case WM_CREATE:
@@ -92,7 +93,7 @@ LRESULT WINAPI MyWndProc(HWND hwnd, UINT mcode, WPARAM wp, LPARAM lp)
             i++;
             if (i == 2) {
                 i = 0;
-                line = new Line(points[0][0], points[0][1], points[1][0], points[1][1], (LineDrawer*) shapeDrawer);
+                line = new Line(points[0][0], points[0][1], points[1][0], points[1][1], color, (LineDrawer*) shapeDrawer);
                 shapes.push_back(*line);
                 glFlush();
             }
@@ -127,6 +128,7 @@ LRESULT WINAPI MyWndProc(HWND hwnd, UINT mcode, WPARAM wp, LPARAM lp)
                 cc.Flags = CC_FULLOPEN | CC_RGBINIT;
                 if (ChooseColor(&cc) == TRUE) {
                     rgbCurrent = cc.rgbResult;
+                    color = cc.rgbResult;
                 }
                 break;
         }

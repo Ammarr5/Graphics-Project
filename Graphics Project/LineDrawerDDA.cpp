@@ -15,9 +15,14 @@ void LineDrawerDDA::draw(ShapeData* data) {
     int y1 = lData.y1;
     int x2 = lData.x2;
     int y2 = lData.y2;
+    COLORREF color = lData.color;
+
+    float r = (float)GetRValue(color)/255;
+    float g = (float)GetGValue(color)/255;
+    float b = (float)GetBValue(color)/255;
 
     glBegin(GL_POINTS);
-    glColor3f(1, 0, 0);
+    glColor3f(r, g, b);
     int dx = x2 - x1;
     int dy = y2 - y1;
     if (abs(dy) <= abs(dx)) {
