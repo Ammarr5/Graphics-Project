@@ -92,8 +92,9 @@ LRESULT WINAPI MyWndProc(HWND hwnd, UINT mcode, WPARAM wp, LPARAM lp)
 	switch (mcode)
 	{
     case WM_SETCURSOR:{
-        HCURSOR cursor = LoadCursorFromFileA("c2.cur");
-        SetCursor(cursor);
+//        HCURSOR cursor = LoadCursorFromFileA("c2.cur");
+//        SetCursor(cursor);
+        SetCursor(LoadCursor(NULL, IDC_SIZEALL));
         break;}
 	case WM_CREATE:{
 		hdc = GetDC(hwnd);
