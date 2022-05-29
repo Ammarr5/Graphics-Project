@@ -91,10 +91,10 @@ LRESULT WINAPI MyWndProc(HWND hwnd, UINT mcode, WPARAM wp, LPARAM lp)
     static Vector p[numberOfSplinePoints];
 	switch (mcode)
 	{
-    /*case WM_SETCURSOR:{
+    case WM_SETCURSOR:{
         HCURSOR cursor = LoadCursorFromFileA("c2.cur");
         SetCursor(cursor);
-        break;}*/
+        break;}
 	case WM_CREATE:{
 		hdc = GetDC(hwnd);
 		populateMenus(hwnd);
