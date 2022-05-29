@@ -18,86 +18,85 @@ void LineDrawerMidpoint::draw(ShapeData* data) {
 
     glBegin(GL_POINTS);
     glColor3f((float)GetRValue(color)/255, (float)GetGValue(color)/255, (float) GetBValue(color)/255);
+    int x,y,xe,ye,i;
     int dx = x2 - x1;
     int dy = y2 - y1;
-    if (abs(dy) < abs(dx)) {
-        int d = dx - 2 * dy;
-        int change1 = 2 * dx - 2 * dy;
-        int change2 = -2 * dy;
-        if (x1 > x2) {
-            swap(x1, y1, x2, y2);
+    int dx1=abs(dx);
+    int dy1=abs(dy);
+    int px=2*dy1-dx1;
+    int py=2*dx1-dy1;
+    if(dy1<=dx1)
+    {
+        if(dx>=0)
+        {
+            x=x1;
+            y=y1;
+            xe=x2;
         }
-        if (y1 < y2) {
-            int x = x1;
-            int y = y1;
-            glVertex2d(x, y);
-            while (x < x2) {
-                if (d < 0) {
-                    d += change1;
+        else
+        {
+            x=x2;
+            y=y2;
+            xe=x1;
+        }
+        glVertex2d(x,y);
+        for(i=0;x<xe;i++)
+        {
+            x++;
+            if(px<0)
+            {
+                px=px+2*dy1;
+            }
+            else
+            {
+                if((dx<0 && dy<0) || (dx>0 && dy>0))
+                {
                     y++;
                 }
-                else {
-                    d += change2;
-                }
-                x++;
-                glVertex2d(x, y);
-            }
-        }
-        else {
-            int x = x1;
-            int y = y1;
-            glVertex2d(x, y);
-            while (x < x2) {
-                if (d < 0) {
-                    d += change1;
+                else
+                {
                     y--;
                 }
-                else {
-                    d += change2;
-                }
-                x++;
-                glVertex2d(x, y);
+                px=px+2*(dy1-dx1);
             }
+            glVertex2d(x,y);
         }
     }
-    else {
-        int d = 2 * dx - dy;
-        int change1 = 2 * dx - 2 * dy;
-        int change2 = 2 * dx;
-        if (y1 > y2) {
-            swap(x1, y1, x2, y2);
+    else
+    {
+        if(dy>=0)
+        {
+            x=x1;
+            y=y1;
+            ye=y2;
         }
-        if (x1 < x2) {
-            int x = x1;
-            int y = y1;
-            glVertex2d(x, y);
-            while (y < y2) {
-                if (d > 0) {
-                    d += change1;
+        else
+        {
+            x=x2;
+            y=y2;
+            ye=y1;
+        }
+        glVertex2d(x,y);
+        for(i=0;y<ye;i++)
+        {
+            y++;
+            if(py<=0)
+            {
+                py=py+2*dx1;
+            }
+            else
+            {
+                if((dx<0 && dy<0) || (dx>0 && dy>0))
+                {
                     x++;
                 }
-                else {
-                    d += change2;
-                }
-                y++;
-                glVertex2d(x, y);
-            }
-        }
-        else {
-            int x = x1;
-            int y = y1;
-            glVertex2d(x, y);
-            while (y > y2) {
-                if (d > 0) {
-                    d += change1;
+                else
+                {
                     x--;
                 }
-                else {
-                    d += change2;
-                }
-                y++;
-                glVertex2d(x, y);
+                py=py+2*(dx1-dy1);
             }
+            glVertex2d(x,y);
         }
     }
     glEnd();

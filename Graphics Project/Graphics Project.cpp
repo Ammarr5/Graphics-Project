@@ -5,10 +5,12 @@
 #include <Windows.h>
 #include <gl\GL.h>
 #include <gl\GLu.h>
+#include <fstream>
 #include <math.h>
 #include <iostream>
 #include "menu_items.h"
 #include "Line.h"
+#include "CardinalSpline.h"
 #include "LineDrawerDDA.h"
 #include "LineDrawerMidpoint.h"
 #include "LineDrawerParametric.h"
@@ -18,8 +20,18 @@
 #pragma comment(lib,"glu32")
 using namespace std;
 
+struct Point{
+    int x,y;
+};
+
 void populateMenus(HWND);
+string browseFile(bool);
 vector<Shape*> shapes;
+
+template<typename Base, typename T>
+inline bool instanceof(const T *ptr) {
+    return dynamic_cast<const Base*>(ptr) != nullptr;
+}
 
 HGLRC InitOpenGl(HDC hdc)
 {
@@ -71,16 +83,16 @@ LRESULT WINAPI MyWndProc(HWND hwnd, UINT mcode, WPARAM wp, LPARAM lp)
 	static HGLRC glrc;
     static ShapeDrawer* shapeDrawer = nullptr;
     static COLORREF color = RGB(1, 1, 0);
-	static int points[2][2];
+	static Point points[2];
 	static int i = 0;
-    enum ShapeType{line, none_selected};
+    enum ShapeType{line,cardinalspline, none_selected};
     static ShapeType shapetype = none_selected;
+    const int numberOfSplinePoints=8;
+    static Vector p[numberOfSplinePoints];
 	switch (mcode)
 	{
     case WM_SETCURSOR:{
-//        const HCURSOR cursor = static_cast<HCURSOR>(LoadImage(NULL, L"c.cur", IMAGE_CURSOR, 0, 0, LR_LOADFROMFILE));
         HCURSOR cursor = LoadCursorFromFileA("c2.cur");
-//        SetCursor(LoadCursor(NULL, IDC_HAND));
         SetCursor(cursor);
         break;}
 	case WM_CREATE:{
@@ -93,17 +105,29 @@ LRESULT WINAPI MyWndProc(HWND hwnd, UINT mcode, WPARAM wp, LPARAM lp)
 		break;
 	case WM_LBUTTONDOWN:{
         if(shapetype==line) {
-            points[i][0] = LOWORD(lp);
-            points[i][1] = HIWORD(lp);
+            points[i].x = LOWORD(lp);
+            points[i].y = HIWORD(lp);
             i++;
             if (i == 2) {
                 i = 0;
                 Shape *line;
                 LineDrawer* ld = (LineDrawerDDA*)shapeDrawer;
-                line = new Line(points[0][0], points[0][1], points[1][0], points[1][1], color, ld);
+                line = new Line(points[0].x, points[0].y, points[1].x, points[1].y, color, ld);
                 shapes.push_back(line);
-                glFlush();
             }
+        }
+        else if(shapetype==cardinalspline){
+            p[i] = Vector(LOWORD(lp), HIWORD(lp));
+            if (i == numberOfSplinePoints-1) {
+                Vector T1(3 * (p[1][0] - p[0][0]), 3 * (p[1][1] - p[0][1]));
+                Vector T2(3 * (p[3][0] - p[2][0]), 3 * (p[3][1] - p[2][1]));
+                Shape *spline;
+                CardinalSplineDrawer* sd = (CardinalSplineDrawer*)shapeDrawer;
+                spline=new CardinalSpline(p,8,0.3,color,sd);
+                i = 0;
+                shapes.push_back(spline);
+            }
+            else i++;
         }
 		break;
     }
@@ -142,6 +166,28 @@ LRESULT WINAPI MyWndProc(HWND hwnd, UINT mcode, WPARAM wp, LPARAM lp)
                     color = cc.rgbResult;
                 }
                 break;
+            case M_CARDINAL_SPLINE:
+                delete shapeDrawer;
+                shapeDrawer = new CardinalSplineDrawer();
+                shapetype = cardinalspline;
+                break;
+            case M_SAVE:{
+                string path = browseFile(true);
+
+                break;}
+            case M_LOAD:
+                string path = browseFile(false);
+                cout<<path<<endl;
+                char data[100];
+                ifstream infile;
+                infile.open(path);
+
+                cout << "Reading from the file" << endl;
+                infile >> data;
+
+                // write the data at the screen.
+                cout << data << endl;
+                break;
         }
 		break;
 	case WM_CLOSE:
@@ -155,31 +201,6 @@ LRESULT WINAPI MyWndProc(HWND hwnd, UINT mcode, WPARAM wp, LPARAM lp)
 	default: return DefWindowProc(hwnd, mcode, wp, lp);
 	}
 	return 0;
-}
-
-// function to add menus to window once created
-void populateMenus(HWND hwnd) {
-
-	HMENU hMenubar; // Strip that holds all menus (which is one in our case call "menu")
-	HMENU hMenu;
-	HMENU hLineMenu; // Line submenu
-
-	hMenubar = CreateMenu();
-	hMenu = CreateMenu();
-	hLineMenu = CreateMenu();
-
-	AppendMenuW(hMenu, MF_STRING, M_SAVE, L"&Save");
-	AppendMenuW(hMenu, MF_STRING, M_LOAD, L"&Load");
-	AppendMenuW(hMenu, MF_SEPARATOR, 0, NULL);
-    AppendMenuW(hMenu, MF_STRING, M_COLOR, L"&Select Color");
-	AppendMenuW(hMenu, MF_STRING, M_WHITE_BG, L"&White Background");
-	AppendMenuW(hMenu, MF_STRING, M_CLEAR_SCREEN, L"&Clear Screen");
-	AppendMenuW(hMenu, MF_STRING | MF_POPUP, (UINT_PTR)hLineMenu, L"&Line"); // Line submenu nested to hLineMenu
-	AppendMenuW(hLineMenu, MF_STRING, M_LINE_DDA, L"&DDA"); // Notice now we append to hLineMenu not hMenu
-	AppendMenuW(hLineMenu, MF_STRING, M_LINE_MP, L"&Midpoint");
-	AppendMenuW(hLineMenu, MF_STRING, M_LINE_PARAM, L"&Parametric");
-	AppendMenuW(hMenubar, MF_POPUP, (UINT_PTR)hMenu, L"&Menu");
-	SetMenu(hwnd, hMenubar);
 }
 
 int APIENTRY WinMain(HINSTANCE hinst, HINSTANCE pinst, LPSTR cmd, int nsh)
@@ -205,4 +226,86 @@ int APIENTRY WinMain(HINSTANCE hinst, HINSTANCE pinst, LPSTR cmd, int nsh)
 		DispatchMessage(&msg);
 	}
 	return 0;
+}
+
+string browseFile(bool save) {
+    OPENFILENAME ofn;       // common dialog box structure
+    wchar_t szFile[MAX_PATH];       // buffer for file name
+    ZeroMemory(&ofn, sizeof(ofn));
+    ofn.lStructSize = sizeof(ofn);
+    wchar_t title[500];  // to hold title
+    ofn.hwndOwner = NULL;
+    ofn.lpstrFile = szFile;
+    ofn.lpstrFile[0] = '\0';
+    ofn.nMaxFile = MAX_PATH;
+    ofn.lpstrFilter = L"Text File\0*.txt";
+    ofn.nFilterIndex = 1;
+    ofn.lpstrFileTitle = NULL;
+    ofn.nMaxFileTitle = 0;
+    ofn.lpstrInitialDir = NULL;
+    ofn.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST;
+
+    // Display the Open dialog box.
+    WINBOOL res = FALSE;
+    if(save) {
+        res = GetSaveFileName(&ofn);
+    } else {
+        res = GetOpenFileName(&ofn);
+    }
+    if(res != TRUE) {
+        return "";
+    }
+
+    for(int i=0; i<MAX_PATH; i++){
+        if(szFile[i] == '\n'){break;}
+        if(szFile[i]=='\\')
+            szFile[i]='/';
+    };
+    wstring ws(szFile);
+    string path(ws.begin(), ws.end());
+    return path;
+}
+
+// function to add menus to window once created
+void populateMenus(HWND hwnd) {
+
+    HMENU hMenubar; // Strip that holds all menus (which is one in our case call "menu")
+    HMENU hMenu;
+    HMENU hLineMenu; // Line submenu
+    HMENU hRectClipping; // Rectangle Clipping submenu
+    HMENU hSquClipping; // Square Clipping submenu
+    HMENU hCirClipping; // Circle Clipping submenu
+
+    hMenubar = CreateMenu();
+    hMenu = CreateMenu();
+    hLineMenu = CreateMenu();
+    hRectClipping = CreateMenu();
+    hSquClipping = CreateMenu();
+    hCirClipping = CreateMenu();
+
+    AppendMenuW(hMenu, MF_STRING, M_SAVE, L"&Save");
+    AppendMenuW(hMenu, MF_STRING, M_LOAD, L"&Load");
+    AppendMenuW(hMenu, MF_SEPARATOR, 0, NULL);
+    AppendMenuW(hMenu, MF_STRING, M_COLOR, L"&Select Color");
+    AppendMenuW(hMenu, MF_STRING, M_WHITE_BG, L"&White Background");
+    AppendMenuW(hMenu, MF_STRING, M_CLEAR_SCREEN, L"&Clear Screen");
+    AppendMenuW(hMenu, MF_STRING | MF_POPUP, (UINT_PTR)hLineMenu, L"&Line"); // Line submenu nested to hLineMenu
+    AppendMenuW(hLineMenu, MF_STRING, M_LINE_DDA, L"&DDA"); // Notice now we append to hLineMenu not hMenu
+    AppendMenuW(hLineMenu, MF_STRING, M_LINE_MP, L"&Midpoint");
+    AppendMenuW(hLineMenu, MF_STRING, M_LINE_PARAM, L"&Parametric");
+    AppendMenuW(hMenubar, MF_POPUP, (UINT_PTR)hMenu, L"&Menu");
+    AppendMenuW(hMenu, MF_STRING, M_CARDINAL_SPLINE, L"&Cardinal Spline Curve");
+    AppendMenuW(hMenu, MF_SEPARATOR, 0, NULL);
+    AppendMenuW(hMenu, MF_STRING | MF_POPUP, (UINT_PTR)hRectClipping, L"&Rectangle Clipping");
+    AppendMenuW(hRectClipping, MF_STRING, M_CLIP_RECT_POINT, L"&Point");
+    AppendMenuW(hRectClipping, MF_STRING, M_CLIP_RECT_LINE, L"&Line");
+    AppendMenuW(hRectClipping, MF_STRING, M_CLIP_RECT_POLYGON, L"&Polygon");
+    AppendMenuW(hMenu, MF_STRING | MF_POPUP, (UINT_PTR)hSquClipping, L"&Square Clipping");
+    AppendMenuW(hSquClipping, MF_STRING, M_CLIP_SQU_POINT, L"&Point");
+    AppendMenuW(hSquClipping, MF_STRING, M_CLIP_SQU_LINE, L"&Line");
+    AppendMenuW(hMenu, MF_STRING | MF_POPUP, (UINT_PTR)hCirClipping, L"&Circle Clipping");
+    AppendMenuW(hCirClipping, MF_STRING, M_CLIP_CIR_POINT, L"&Point");
+    AppendMenuW(hCirClipping, MF_STRING, M_CLIP_CIR_LINE, L"&Line");
+
+    SetMenu(hwnd, hMenubar);
 }
