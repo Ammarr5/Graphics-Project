@@ -5,6 +5,7 @@
 #include <Windows.h>
 #include <gl\GL.h>
 #include <gl\GLu.h>
+#include <fstream>
 #include <math.h>
 #include <iostream>
 #include "menu_items.h"
@@ -23,7 +24,13 @@ struct Point{
 };
 
 void populateMenus(HWND);
+string browseFile(bool);
 vector<Shape*> shapes;
+
+template<typename Base, typename T>
+inline bool instanceof(const T *ptr) {
+    return dynamic_cast<const Base*>(ptr) != nullptr;
+}
 
 HGLRC InitOpenGl(HDC hdc)
 {
@@ -144,6 +151,23 @@ LRESULT WINAPI MyWndProc(HWND hwnd, UINT mcode, WPARAM wp, LPARAM lp)
                     color = cc.rgbResult;
                 }
                 break;
+            case M_SAVE:{
+                string path = browseFile(true);
+
+                break;}
+            case M_LOAD:
+                string path = browseFile(false);
+                cout<<path<<endl;
+                char data[100];
+                ifstream infile;
+                infile.open(path);
+
+                cout << "Reading from the file" << endl;
+                infile >> data;
+
+                // write the data at the screen.
+                cout << data << endl;
+                break;
         }
 		break;
 	case WM_CLOSE:
@@ -157,40 +181,6 @@ LRESULT WINAPI MyWndProc(HWND hwnd, UINT mcode, WPARAM wp, LPARAM lp)
 	default: return DefWindowProc(hwnd, mcode, wp, lp);
 	}
 	return 0;
-}
-
-// function to add menus to window once created
-void populateMenus(HWND hwnd) {
-
-	HMENU hMenubar; // Strip that holds all menus (which is one in our case call "menu")
-	HMENU hMenu;
-	HMENU hLineMenu; // Line submenu
-	HMENU hRectClipping; // Rectangle Clipping submenu
-
-	hMenubar = CreateMenu();
-	hMenu = CreateMenu();
-	hLineMenu = CreateMenu();
-    hRectClipping = CreateMenu();
-
-	AppendMenuW(hMenu, MF_STRING, M_SAVE, L"&Save");
-	AppendMenuW(hMenu, MF_STRING, M_LOAD, L"&Load");
-	AppendMenuW(hMenu, MF_SEPARATOR, 0, NULL);
-    AppendMenuW(hMenu, MF_STRING, M_COLOR, L"&Select Color");
-	AppendMenuW(hMenu, MF_STRING, M_WHITE_BG, L"&White Background");
-	AppendMenuW(hMenu, MF_STRING, M_CLEAR_SCREEN, L"&Clear Screen");
-	AppendMenuW(hMenu, MF_STRING | MF_POPUP, (UINT_PTR)hLineMenu, L"&Line"); // Line submenu nested to hLineMenu
-	AppendMenuW(hLineMenu, MF_STRING, M_LINE_DDA, L"&DDA"); // Notice now we append to hLineMenu not hMenu
-	AppendMenuW(hLineMenu, MF_STRING, M_LINE_MP, L"&Midpoint");
-	AppendMenuW(hLineMenu, MF_STRING, M_LINE_PARAM, L"&Parametric");
-	AppendMenuW(hMenubar, MF_POPUP, (UINT_PTR)hMenu, L"&Menu");
-
-    AppendMenuW(hMenu, MF_SEPARATOR, 0, NULL);
-    AppendMenuW(hMenu, MF_STRING | MF_POPUP, (UINT_PTR)hRectClipping, L"&Rectangle Clip");
-    AppendMenuW(hRectClipping, MF_STRING, M_CLIP_RECT_POINT, L"&Point");
-    AppendMenuW(hRectClipping, MF_STRING, M_CLIP_RECT_LINE, L"&Line");
-    AppendMenuW(hRectClipping, MF_STRING, M_CLIP_RECT_POLYGON, L"&Polygon");
-
-    SetMenu(hwnd, hMenubar);
 }
 
 int APIENTRY WinMain(HINSTANCE hinst, HINSTANCE pinst, LPSTR cmd, int nsh)
@@ -216,4 +206,72 @@ int APIENTRY WinMain(HINSTANCE hinst, HINSTANCE pinst, LPSTR cmd, int nsh)
 		DispatchMessage(&msg);
 	}
 	return 0;
+}
+
+string browseFile(bool save) {
+    OPENFILENAME ofn;       // common dialog box structure
+    wchar_t szFile[MAX_PATH];       // buffer for file name
+    ZeroMemory(&ofn, sizeof(ofn));
+    ofn.lStructSize = sizeof(ofn);
+    wchar_t title[500];  // to hold title
+    ofn.hwndOwner = NULL;
+    ofn.lpstrFile = szFile;
+    ofn.lpstrFile[0] = '\0';
+    ofn.nMaxFile = MAX_PATH;
+    ofn.lpstrFilter = L"Text File\0*.txt";
+    ofn.nFilterIndex = 1;
+    ofn.lpstrFileTitle = NULL;
+    ofn.nMaxFileTitle = 0;
+    ofn.lpstrInitialDir = NULL;
+    ofn.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST;
+
+    // Display the Open dialog box.
+    if(save) {
+        GetSaveFileName(&ofn);
+    } else {
+        GetOpenFileName(&ofn);
+    }
+
+    for(int i=0; i<MAX_PATH; i++){
+        if(szFile[i] == '\n'){break;}
+        if(szFile[i]=='\\')
+            szFile[i]='/';
+    };
+    wstring ws(szFile);
+    string path(ws.begin(), ws.end());
+    return path;
+}
+
+// function to add menus to window once created
+void populateMenus(HWND hwnd) {
+
+    HMENU hMenubar; // Strip that holds all menus (which is one in our case call "menu")
+    HMENU hMenu;
+    HMENU hLineMenu; // Line submenu
+    HMENU hRectClipping; // Rectangle Clipping submenu
+
+    hMenubar = CreateMenu();
+    hMenu = CreateMenu();
+    hLineMenu = CreateMenu();
+    hRectClipping = CreateMenu();
+
+    AppendMenuW(hMenu, MF_STRING, M_SAVE, L"&Save");
+    AppendMenuW(hMenu, MF_STRING, M_LOAD, L"&Load");
+    AppendMenuW(hMenu, MF_SEPARATOR, 0, NULL);
+    AppendMenuW(hMenu, MF_STRING, M_COLOR, L"&Select Color");
+    AppendMenuW(hMenu, MF_STRING, M_WHITE_BG, L"&White Background");
+    AppendMenuW(hMenu, MF_STRING, M_CLEAR_SCREEN, L"&Clear Screen");
+    AppendMenuW(hMenu, MF_STRING | MF_POPUP, (UINT_PTR)hLineMenu, L"&Line"); // Line submenu nested to hLineMenu
+    AppendMenuW(hLineMenu, MF_STRING, M_LINE_DDA, L"&DDA"); // Notice now we append to hLineMenu not hMenu
+    AppendMenuW(hLineMenu, MF_STRING, M_LINE_MP, L"&Midpoint");
+    AppendMenuW(hLineMenu, MF_STRING, M_LINE_PARAM, L"&Parametric");
+    AppendMenuW(hMenubar, MF_POPUP, (UINT_PTR)hMenu, L"&Menu");
+
+    AppendMenuW(hMenu, MF_SEPARATOR, 0, NULL);
+    AppendMenuW(hMenu, MF_STRING | MF_POPUP, (UINT_PTR)hRectClipping, L"&Rectangle Clip");
+    AppendMenuW(hRectClipping, MF_STRING, M_CLIP_RECT_POINT, L"&Point");
+    AppendMenuW(hRectClipping, MF_STRING, M_CLIP_RECT_LINE, L"&Line");
+    AppendMenuW(hRectClipping, MF_STRING, M_CLIP_RECT_POLYGON, L"&Polygon");
+
+    SetMenu(hwnd, hMenubar);
 }
