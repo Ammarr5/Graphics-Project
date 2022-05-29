@@ -19,7 +19,7 @@
 using namespace std;
 
 void populateMenus(HWND);
-vector<Shape> shapes;
+vector<Shape*> shapes;
 
 HGLRC InitOpenGl(HDC hdc)
 {
@@ -85,20 +85,22 @@ LRESULT WINAPI MyWndProc(HWND hwnd, UINT mcode, WPARAM wp, LPARAM lp)
 	case WM_SIZE:
 		AdjustWindowFor2D(hdc, LOWORD(lp), HIWORD(lp));
 		break;
-	case WM_LBUTTONDOWN:
+	case WM_LBUTTONDOWN:{
         if(shapetype==line) {
-            Shape *line;
             points[i][0] = LOWORD(lp);
             points[i][1] = HIWORD(lp);
             i++;
             if (i == 2) {
                 i = 0;
-                line = new Line(points[0][0], points[0][1], points[1][0], points[1][1], color, (LineDrawer*) shapeDrawer);
-                shapes.push_back(*line);
+                Shape *line;
+                LineDrawer* ld = (LineDrawerDDA*)shapeDrawer;
+                line = new Line(points[0][0], points[0][1], points[1][0], points[1][1], color, ld);
+                shapes.push_back(line);
                 glFlush();
             }
         }
 		break;
+    }
 	case WM_COMMAND: // When menu option is selected
 		switch (LOWORD(wp)) { // switch for various menu options
             case M_WHITE_BG:

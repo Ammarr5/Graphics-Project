@@ -6,7 +6,7 @@ Shape::Shape(ShapeData* shapeData, ShapeDrawer* shapeDrawer) {
 }
 
 void Shape::draw() {
-	this->shapeDrawer->draw(this->shapeData);
+	shapeDrawer->draw(shapeData);
 }
 
 Shape::~Shape() {
