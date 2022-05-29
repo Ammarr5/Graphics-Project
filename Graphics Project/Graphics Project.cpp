@@ -87,8 +87,8 @@ LRESULT WINAPI MyWndProc(HWND hwnd, UINT mcode, WPARAM wp, LPARAM lp)
 	static int i = 0;
     enum ShapeType{line,cardinalspline, none_selected};
     static ShapeType shapetype = none_selected;
-    const int numberOfPoints=8;
-    static Vector p[numberOfPoints];
+    const int numberOfSplinePoints=8;
+    static Vector p[numberOfSplinePoints];
 	switch (mcode)
 	{
     case WM_SETCURSOR:{
@@ -118,7 +118,7 @@ LRESULT WINAPI MyWndProc(HWND hwnd, UINT mcode, WPARAM wp, LPARAM lp)
         }
         else if(shapetype==cardinalspline){
             p[i] = Vector(LOWORD(lp), HIWORD(lp));
-            if (i == numberOfPoints-1) {
+            if (i == numberOfSplinePoints-1) {
                 Vector T1(3 * (p[1][0] - p[0][0]), 3 * (p[1][1] - p[0][1]));
                 Vector T2(3 * (p[3][0] - p[2][0]), 3 * (p[3][1] - p[2][1]));
                 Shape *spline;
