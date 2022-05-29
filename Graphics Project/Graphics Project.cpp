@@ -77,11 +77,17 @@ LRESULT WINAPI MyWndProc(HWND hwnd, UINT mcode, WPARAM wp, LPARAM lp)
     static ShapeType shapetype = none_selected;
 	switch (mcode)
 	{
-	case WM_CREATE:
+    case WM_SETCURSOR:{
+//        const HCURSOR cursor = static_cast<HCURSOR>(LoadImage(NULL, L"c.cur", IMAGE_CURSOR, 0, 0, LR_LOADFROMFILE));
+        HCURSOR cursor = LoadCursorFromFileA("c2.cur");
+//        SetCursor(LoadCursor(NULL, IDC_HAND));
+        SetCursor(cursor);
+        break;}
+	case WM_CREATE:{
 		hdc = GetDC(hwnd);
 		populateMenus(hwnd);
 		glrc = InitOpenGl(hdc);
-		break;
+		break;}
 	case WM_SIZE:
 		AdjustWindowFor2D(hdc, LOWORD(lp), HIWORD(lp));
 		break;
@@ -107,14 +113,17 @@ LRESULT WINAPI MyWndProc(HWND hwnd, UINT mcode, WPARAM wp, LPARAM lp)
                 cout << "white bg";
                 break;
             case M_LINE_DDA:
+                delete shapeDrawer;
                 shapeDrawer = new LineDrawerDDA();
                 shapetype = line;
                 break;
             case M_LINE_MP:
+                delete shapeDrawer;
                 shapeDrawer = new LineDrawerMidpoint();
                 shapetype = line;
                 break;
             case M_LINE_PARAM:
+                delete shapeDrawer;
                 shapeDrawer = new LineDrawerParametric();
                 shapetype = line;
                 break;
