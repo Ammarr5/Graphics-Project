@@ -87,14 +87,14 @@ LRESULT WINAPI MyWndProc(HWND hwnd, UINT mcode, WPARAM wp, LPARAM lp)
 	static int i = 0;
     enum ShapeType{line,cardinalspline, none_selected};
     static ShapeType shapetype = none_selected;
-    static Vector p[8];
-    static int index = 0;
+    const int numberOfSplinePoints=8;
+    static Vector p[numberOfSplinePoints];
 	switch (mcode)
 	{
-    case WM_SETCURSOR:{
+    /*case WM_SETCURSOR:{
         HCURSOR cursor = LoadCursorFromFileA("c2.cur");
         SetCursor(cursor);
-        break;}
+        break;}*/
 	case WM_CREATE:{
 		hdc = GetDC(hwnd);
 		populateMenus(hwnd);
@@ -117,17 +117,17 @@ LRESULT WINAPI MyWndProc(HWND hwnd, UINT mcode, WPARAM wp, LPARAM lp)
             }
         }
         else if(shapetype==cardinalspline){
-            p[index] = Vector(LOWORD(lp), HIWORD(lp));
-            if (index == 7) {
+            p[i] = Vector(LOWORD(lp), HIWORD(lp));
+            if (i == numberOfSplinePoints-1) {
                 Vector T1(3 * (p[1][0] - p[0][0]), 3 * (p[1][1] - p[0][1]));
                 Vector T2(3 * (p[3][0] - p[2][0]), 3 * (p[3][1] - p[2][1]));
                 Shape *spline;
                 CardinalSplineDrawer* sd = (CardinalSplineDrawer*)shapeDrawer;
                 spline=new CardinalSpline(p,8,0.3,color,sd);
-                index = 0;
+                i = 0;
                 shapes.push_back(spline);
             }
-            else index++;
+            else i++;
         }
 		break;
     }
@@ -278,11 +278,15 @@ void populateMenus(HWND hwnd) {
     HMENU hMenu;
     HMENU hLineMenu; // Line submenu
     HMENU hRectClipping; // Rectangle Clipping submenu
+    HMENU hSquClipping; // Square Clipping submenu
+    HMENU hCirClipping; // Circle Clipping submenu
 
     hMenubar = CreateMenu();
     hMenu = CreateMenu();
     hLineMenu = CreateMenu();
     hRectClipping = CreateMenu();
+    hSquClipping = CreateMenu();
+    hCirClipping = CreateMenu();
 
     AppendMenuW(hMenu, MF_STRING, M_SAVE, L"&Save");
     AppendMenuW(hMenu, MF_STRING, M_LOAD, L"&Load");
@@ -297,10 +301,16 @@ void populateMenus(HWND hwnd) {
     AppendMenuW(hMenubar, MF_POPUP, (UINT_PTR)hMenu, L"&Menu");
     AppendMenuW(hMenu, MF_STRING, M_CARDINAL_SPLINE, L"&Cardinal Spline Curve");
     AppendMenuW(hMenu, MF_SEPARATOR, 0, NULL);
-    AppendMenuW(hMenu, MF_STRING | MF_POPUP, (UINT_PTR)hRectClipping, L"&Rectangle Clip");
+    AppendMenuW(hMenu, MF_STRING | MF_POPUP, (UINT_PTR)hRectClipping, L"&Rectangle Clipping");
     AppendMenuW(hRectClipping, MF_STRING, M_CLIP_RECT_POINT, L"&Point");
     AppendMenuW(hRectClipping, MF_STRING, M_CLIP_RECT_LINE, L"&Line");
     AppendMenuW(hRectClipping, MF_STRING, M_CLIP_RECT_POLYGON, L"&Polygon");
+    AppendMenuW(hMenu, MF_STRING | MF_POPUP, (UINT_PTR)hSquClipping, L"&Square Clipping");
+    AppendMenuW(hSquClipping, MF_STRING, M_CLIP_SQU_POINT, L"&Point");
+    AppendMenuW(hSquClipping, MF_STRING, M_CLIP_SQU_LINE, L"&Line");
+    AppendMenuW(hMenu, MF_STRING | MF_POPUP, (UINT_PTR)hCirClipping, L"&Circle Clipping");
+    AppendMenuW(hCirClipping, MF_STRING, M_CLIP_CIR_POINT, L"&Point");
+    AppendMenuW(hCirClipping, MF_STRING, M_CLIP_CIR_LINE, L"&Line");
 
     SetMenu(hwnd, hMenubar);
 }
