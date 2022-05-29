@@ -246,10 +246,14 @@ string browseFile(bool save) {
     ofn.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST;
 
     // Display the Open dialog box.
+    WINBOOL res = FALSE;
     if(save) {
-        GetSaveFileName(&ofn);
+        res = GetSaveFileName(&ofn);
     } else {
-        GetOpenFileName(&ofn);
+        res = GetOpenFileName(&ofn);
+    }
+    if(res != TRUE) {
+        return "";
     }
 
     for(int i=0; i<MAX_PATH; i++){
