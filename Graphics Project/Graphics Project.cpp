@@ -173,17 +173,22 @@ LRESULT WINAPI MyWndProc(HWND hwnd, UINT mcode, WPARAM wp, LPARAM lp)
                 break;
             case M_SAVE:{
                 string path = browseFile(true);
-
+                if (path == ""){break;}
+                ofstream ofile;
+                ofile.open(path);
+                for(Shape* shape : shapes) {
+                    cout<<instanceof<Line>(shape)<<endl;
+                }
                 break;}
             case M_LOAD:
                 string path = browseFile(false);
-                cout<<path<<endl;
+                if (path == ""){break;}
                 char data[100];
                 ifstream infile;
                 infile.open(path);
 
                 cout << "Reading from the file" << endl;
-                infile >> data;
+                infile.getline(&data[0], 100);
 
                 // write the data at the screen.
                 cout << data << endl;
