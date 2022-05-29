@@ -1,9 +1,9 @@
-cmake_minimum_required(VERSION 3.21)
+cmake_minimum_required(VERSION 3.20)
 project(Graphics_Project)
 
 set(CMAKE_CXX_STANDARD 14)
 
-include_directories(.)
+include_directories(. "C:\\MinGW\\include")
 
 add_executable(Graphics_Project
         framework.h
@@ -26,5 +26,5 @@ add_executable(Graphics_Project
         ShapeDrawer.h
         targetver.h LineDrawerMidpoint.cpp LineDrawerMidpoint.h LineDrawerParametric.cpp LineDrawerParametric.h)
 
-target_link_libraries(Graphics_Project -lOpenGL32 -lfreeGLUT -lglu32)
+target_link_libraries(Graphics_Project -lOpenGL32  -lglu32)
 
