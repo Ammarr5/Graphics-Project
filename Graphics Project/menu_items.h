@@ -7,3 +7,6 @@
 #define M_LINE_MP 6
 #define M_LINE_PARAM 7
 #define M_COLOR 8
+#define M_CLIP_RECT_POINT 9
+#define M_CLIP_RECT_LINE 10
+#define M_CLIP_RECT_POLYGON 11

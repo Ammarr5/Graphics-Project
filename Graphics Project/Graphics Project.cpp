@@ -82,9 +82,7 @@ LRESULT WINAPI MyWndProc(HWND hwnd, UINT mcode, WPARAM wp, LPARAM lp)
 	switch (mcode)
 	{
     case WM_SETCURSOR:{
-//        const HCURSOR cursor = static_cast<HCURSOR>(LoadImage(NULL, L"c.cur", IMAGE_CURSOR, 0, 0, LR_LOADFROMFILE));
         HCURSOR cursor = LoadCursorFromFileA("c2.cur");
-//        SetCursor(LoadCursor(NULL, IDC_HAND));
         SetCursor(cursor);
         break;}
 	case WM_CREATE:{
@@ -167,10 +165,12 @@ void populateMenus(HWND hwnd) {
 	HMENU hMenubar; // Strip that holds all menus (which is one in our case call "menu")
 	HMENU hMenu;
 	HMENU hLineMenu; // Line submenu
+	HMENU hRectClipping; // Rectangle Clipping submenu
 
 	hMenubar = CreateMenu();
 	hMenu = CreateMenu();
 	hLineMenu = CreateMenu();
+    hRectClipping = CreateMenu();
 
 	AppendMenuW(hMenu, MF_STRING, M_SAVE, L"&Save");
 	AppendMenuW(hMenu, MF_STRING, M_LOAD, L"&Load");
@@ -183,7 +183,14 @@ void populateMenus(HWND hwnd) {
 	AppendMenuW(hLineMenu, MF_STRING, M_LINE_MP, L"&Midpoint");
 	AppendMenuW(hLineMenu, MF_STRING, M_LINE_PARAM, L"&Parametric");
 	AppendMenuW(hMenubar, MF_POPUP, (UINT_PTR)hMenu, L"&Menu");
-	SetMenu(hwnd, hMenubar);
+
+    AppendMenuW(hMenu, MF_SEPARATOR, 0, NULL);
+    AppendMenuW(hMenu, MF_STRING | MF_POPUP, (UINT_PTR)hRectClipping, L"&Rectangle Clip");
+    AppendMenuW(hRectClipping, MF_STRING, M_CLIP_RECT_POINT, L"&Point");
+    AppendMenuW(hRectClipping, MF_STRING, M_CLIP_RECT_LINE, L"&Line");
+    AppendMenuW(hRectClipping, MF_STRING, M_CLIP_RECT_POLYGON, L"&Polygon");
+
+    SetMenu(hwnd, hMenubar);
 }
 
 int APIENTRY WinMain(HINSTANCE hinst, HINSTANCE pinst, LPSTR cmd, int nsh)
