@@ -18,6 +18,10 @@
 #pragma comment(lib,"glu32")
 using namespace std;
 
+struct Point{
+    int x,y;
+};
+
 void populateMenus(HWND);
 vector<Shape*> shapes;
 
@@ -71,7 +75,7 @@ LRESULT WINAPI MyWndProc(HWND hwnd, UINT mcode, WPARAM wp, LPARAM lp)
 	static HGLRC glrc;
     static ShapeDrawer* shapeDrawer = nullptr;
     static COLORREF color = RGB(1, 1, 0);
-	static int points[2][2];
+	static Point points[2];
 	static int i = 0;
     enum ShapeType{line, none_selected};
     static ShapeType shapetype = none_selected;
@@ -93,14 +97,14 @@ LRESULT WINAPI MyWndProc(HWND hwnd, UINT mcode, WPARAM wp, LPARAM lp)
 		break;
 	case WM_LBUTTONDOWN:{
         if(shapetype==line) {
-            points[i][0] = LOWORD(lp);
-            points[i][1] = HIWORD(lp);
+            points[i].x = LOWORD(lp);
+            points[i].y = HIWORD(lp);
             i++;
             if (i == 2) {
                 i = 0;
                 Shape *line;
                 LineDrawer* ld = (LineDrawerDDA*)shapeDrawer;
-                line = new Line(points[0][0], points[0][1], points[1][0], points[1][1], color, ld);
+                line = new Line(points[0].x, points[0].y, points[1].x, points[1].y, color, ld);
                 shapes.push_back(line);
                 glFlush();
             }
