@@ -10,6 +10,7 @@
 #include <iostream>
 #include "menu_items.h"
 #include "Line.h"
+#include "CardinalSpline.h"
 #include "LineDrawerDDA.h"
 #include "LineDrawerMidpoint.h"
 #include "LineDrawerParametric.h"
@@ -84,8 +85,10 @@ LRESULT WINAPI MyWndProc(HWND hwnd, UINT mcode, WPARAM wp, LPARAM lp)
     static COLORREF color = RGB(1, 1, 0);
 	static Point points[2];
 	static int i = 0;
-    enum ShapeType{line, none_selected};
+    enum ShapeType{line,cardinalspline, none_selected};
     static ShapeType shapetype = none_selected;
+    static Vector p[8];
+    static int index = 0;
 	switch (mcode)
 	{
     case WM_SETCURSOR:{
@@ -111,8 +114,20 @@ LRESULT WINAPI MyWndProc(HWND hwnd, UINT mcode, WPARAM wp, LPARAM lp)
                 LineDrawer* ld = (LineDrawerDDA*)shapeDrawer;
                 line = new Line(points[0].x, points[0].y, points[1].x, points[1].y, color, ld);
                 shapes.push_back(line);
-                glFlush();
             }
+        }
+        else if(shapetype==cardinalspline){
+            p[index] = Vector(LOWORD(lp), HIWORD(lp));
+            if (index == 7) {
+                Vector T1(3 * (p[1][0] - p[0][0]), 3 * (p[1][1] - p[0][1]));
+                Vector T2(3 * (p[3][0] - p[2][0]), 3 * (p[3][1] - p[2][1]));
+                Shape *spline;
+                CardinalSplineDrawer* sd = (CardinalSplineDrawer*)shapeDrawer;
+                spline=new CardinalSpline(p,8,0.3,color,sd);
+                index = 0;
+                shapes.push_back(spline);
+            }
+            else index++;
         }
 		break;
     }
@@ -150,6 +165,11 @@ LRESULT WINAPI MyWndProc(HWND hwnd, UINT mcode, WPARAM wp, LPARAM lp)
                     rgbCurrent = cc.rgbResult;
                     color = cc.rgbResult;
                 }
+                break;
+            case M_CARDINAL_SPLINE:
+                delete shapeDrawer;
+                shapeDrawer = new CardinalSplineDrawer();
+                shapetype = cardinalspline;
                 break;
             case M_SAVE:{
                 string path = browseFile(true);
@@ -270,7 +290,7 @@ void populateMenus(HWND hwnd) {
     AppendMenuW(hLineMenu, MF_STRING, M_LINE_MP, L"&Midpoint");
     AppendMenuW(hLineMenu, MF_STRING, M_LINE_PARAM, L"&Parametric");
     AppendMenuW(hMenubar, MF_POPUP, (UINT_PTR)hMenu, L"&Menu");
-
+    AppendMenuW(hMenu, MF_STRING, M_CARDINAL_SPLINE, L"&Cardinal Spline Curve");
     AppendMenuW(hMenu, MF_SEPARATOR, 0, NULL);
     AppendMenuW(hMenu, MF_STRING | MF_POPUP, (UINT_PTR)hRectClipping, L"&Rectangle Clip");
     AppendMenuW(hRectClipping, MF_STRING, M_CLIP_RECT_POINT, L"&Point");
