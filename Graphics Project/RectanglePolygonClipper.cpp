@@ -13,7 +13,7 @@ RectanglePolygonClipper::RectanglePolygonClipper(int xt, int yt, int xb, int yb,
     this->windowShape = new class Rectangle(xt, yt, xb, yb, color);
 }
 
-bool RectanglePolygonClipper::clip(ShapeData* data, Shape* clipped) {
+bool RectanglePolygonClipper::clip(ShapeData* data, Shape*& clipped) {
     PolygonData pd = *(PolygonData*) data;
     RectangleData window = *(RectangleData*)windowShape->shapeData;
 

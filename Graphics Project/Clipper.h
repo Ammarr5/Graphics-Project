@@ -14,7 +14,7 @@ public:
         return windowShape;
     }
 
-    virtual bool clip(ShapeData*, Shape*) = 0;
+    virtual bool clip(ShapeData*, Shape*&) = 0;
 };
 
 

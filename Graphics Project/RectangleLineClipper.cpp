@@ -13,7 +13,7 @@ RectangleLineClipper::RectangleLineClipper(int xt, int yt, int xb, int yb, COLOR
     this->windowShape = new class Rectangle(xt, yt, xb, yb, color);
 }
 
-bool RectangleLineClipper::clip(ShapeData* data, Shape* clipped) {
+bool RectangleLineClipper::clip(ShapeData* data, Shape*& clipped) {
     RectangleData window = *(RectangleData*)this->windowShape->shapeData;
     LineData ld = *(LineData*) data;
     outcode outCode1 = getOutCode(ld.x1, ld.y1);

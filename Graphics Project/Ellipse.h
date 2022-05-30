@@ -4,5 +4,5 @@
 
 class Ellipse : public Shape {
     Ellipse(int, int, int, int, int, int, COLORREF color, EllipseDrawer*);
-
+    ostream& format(ostream &out, const Shape &c);
 };

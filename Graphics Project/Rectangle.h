@@ -10,6 +10,7 @@
 class Rectangle : public Shape{
 public:
     Rectangle(int, int, int, int, COLORREF);
+    ostream& format(ostream &out, const Shape &c);
 };
 
 

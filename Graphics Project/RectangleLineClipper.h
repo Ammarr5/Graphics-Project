@@ -22,7 +22,7 @@ union outcode {
 class RectangleLineClipper: public Clipper{
 public:
     RectangleLineClipper(int xt, int yt, int xb, int yb, COLORREF);
-    bool clip(ShapeData*, Shape*);
+    bool clip(ShapeData*, Shape*&);
     outcode getOutCode(int, int);
     static void getVIntersection(int, int, int, int, int, int&, int&);
     static void getHIntersection(int, int, int, int, int, int&, int&);

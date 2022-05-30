@@ -14,6 +14,7 @@
 class Polygon: public Shape{
 public:
     Polygon(std::vector<PointData*>, COLORREF);
+    ostream& format(ostream &out, const Shape &c);
 };
 
 

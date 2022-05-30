@@ -11,7 +11,7 @@
 class RectanglePointClipper : public Clipper{
 public:
     RectanglePointClipper(int xt, int yt, int xb, int yb, COLORREF);
-    bool clip(ShapeData*, Shape*);
+    bool clip(ShapeData*, Shape*&);
 };
 
 

@@ -12,7 +12,7 @@
 class RectanglePolygonClipper: public Clipper{
 public:
     RectanglePolygonClipper(int xt, int yt, int xb, int yb, COLORREF);
-    bool clip(ShapeData*, Shape*);
+    bool clip(ShapeData*, Shape*&);
     void clipLeft(PolygonData&, int);
     void clipRight(PolygonData&, int);
     void clipTop(PolygonData&, int);

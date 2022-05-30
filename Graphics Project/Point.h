@@ -12,6 +12,7 @@
 class Point: public Shape {
 public:
     Point(PointData*);
+    ostream& format(ostream &out, const Shape &c);
 };
 
 

@@ -11,7 +11,7 @@ RectanglePointClipper::RectanglePointClipper(int xt, int yt, int xb, int yb, COL
     this->windowShape = new class Rectangle(xt, yt, xb, yb, color);
 }
 
-bool RectanglePointClipper::clip(ShapeData* shapeData, Shape* clipped) {
+bool RectanglePointClipper::clip(ShapeData* shapeData, Shape*& clipped) {
     PointData p = *(PointData*) shapeData;
     RectangleData window = *(RectangleData*)windowShape->shapeData;
     if(p.x >= window.xt && p.x <= window.xb && p.y >= window.yt && p.y <= window.yb) {
