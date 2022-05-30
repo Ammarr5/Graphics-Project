@@ -200,8 +200,8 @@ LRESULT WINAPI MyWndProc(HWND hwnd, UINT mcode, WPARAM wp, LPARAM lp)
                     break;
                 case M_CLEAR_SCREEN:
                     glClear(GL_COLOR_BUFFER_BIT); // Clearing the screen.
-                    glLoadIdentity();
                     glFlush();
+                    shapes.clear();
                     break;
                 case M_SAVE:{
                     string path = browseFile(true);
