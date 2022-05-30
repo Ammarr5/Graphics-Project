@@ -17,6 +17,12 @@
 #include "FilledCircleByLineDrawer.h"
 #include "FilledCircle.h"
 #include "FilledCircleByCircleDrawer.h"
+#include "Clipper.h"
+#include "RectanglePointClipper.h"
+#include "cmath"
+#include "PointData.h"
+#include "RectangleLineClipper.h"
+#include "RectanglePolygonClipper.h"
 #include <vector>
 
 #pragma comment(lib,"opengl32")
@@ -85,13 +91,17 @@ LRESULT WINAPI MyWndProc(HWND hwnd, UINT mcode, WPARAM wp, LPARAM lp)
     static HDC hdc;
     static HGLRC glrc;
     static ShapeDrawer* shapeDrawer = nullptr;
+    static Shape* tempShape = nullptr;
+    static Clipper* shapeClipper = nullptr;
     static COLORREF color = RGB(1, 1, 0);
     static Point points[2];
     static int i = 0;
-    enum ShapeType{line,cardinalspline,FilledCir, none_selected};
+    static int rectVerticesCounter = 0;
+    enum ShapeType{line,cardinalspline,FilledCir, none_selected, RECT_CLIP_POINT, RECT_CLIP_LINE, RECT_CLIP_POLYGON};
     static ShapeType shapetype = none_selected;
     const int numberOfSplinePoints=8;
     static Vector p[numberOfSplinePoints];
+    static vector<PointData*> polygonLines;
     switch (mcode)
     {
 /*    case WM_SETCURSOR:{
@@ -144,6 +154,64 @@ LRESULT WINAPI MyWndProc(HWND hwnd, UINT mcode, WPARAM wp, LPARAM lp)
                     FilledCircleDrawer* fd = (FilledCircleByLineDrawer*)shapeDrawer;
                     fillCir = new FilledCircle(points[0].x, points[0].y, points[1].x, points[1].y, color, fd);
                     shapes.push_back(fillCir);
+                }
+            }
+            else if(shapetype == RECT_CLIP_POINT) {
+                if (rectVerticesCounter == 2) {
+                    Shape* pointClipped;
+                    if(shapeClipper->clip(new PointData(LOWORD(lp), HIWORD(lp), color), pointClipped)) {
+                        shapes.push_back(pointClipped);
+                    }
+                }
+                else {
+                    points[rectVerticesCounter].x = LOWORD(lp);
+                    points[rectVerticesCounter].y = HIWORD(lp);
+                    rectVerticesCounter++;
+                    if (rectVerticesCounter == 2) {
+                        shapeClipper = new RectanglePointClipper(min(points[0].x, points[1].x), min(points[0].y, points[1].y), max(points[0].x, points[1].x), max(points[0].y, points[1].y), color);
+                    }
+                }
+            }
+            else if(shapetype == RECT_CLIP_LINE) {
+                if(rectVerticesCounter == 2) {
+                    points[i].x = LOWORD(lp);
+                    points[i].y = HIWORD(lp);
+                    i++;
+                    if (i == 2) {
+                        i = 0;
+                        if(shapeClipper->clip(new LineData(points[0].x, points[0].y, points[1].x, points[1].y, color), tempShape)) {
+                            shapes.push_back(tempShape);
+                        }
+                    }
+                }
+                else {
+                    points[rectVerticesCounter].x = LOWORD(lp);
+                    points[rectVerticesCounter].y = HIWORD(lp);
+                    rectVerticesCounter++;
+                    if(rectVerticesCounter == 2) {
+                        shapeClipper = new RectangleLineClipper(min(points[0].x, points[1].x), min(points[0].y, points[1].y), max(points[0].x, points[1].x), max(points[0].y, points[1].y), color);
+                    }
+                }
+            }
+            else if(shapetype == RECT_CLIP_POLYGON) {
+                if(rectVerticesCounter == 2) {
+                    polygonLines.push_back(new PointData(LOWORD(lp), HIWORD(lp), color));
+                    i++;
+                    if (i == 5) {
+                        i = 0;
+                        if(shapeClipper->clip(new PolygonData(polygonLines, color), tempShape)) {
+                            shapes.push_back(tempShape);
+                        }
+                        polygonLines.clear();
+                    }
+                }
+                else {
+                    points[rectVerticesCounter].x = LOWORD(lp);
+                    points[rectVerticesCounter].y = HIWORD(lp);
+                    rectVerticesCounter++;
+                    if(rectVerticesCounter == 2) {
+                        shapeClipper = new RectanglePolygonClipper(min(points[0].x, points[1].x), min(points[0].y, points[1].y), max(points[0].x, points[1].x), max(points[0].y, points[1].y), color);
+                    }
                 }
             }
             break;
@@ -202,6 +270,21 @@ LRESULT WINAPI MyWndProc(HWND hwnd, UINT mcode, WPARAM wp, LPARAM lp)
                     glClear(GL_COLOR_BUFFER_BIT); // Clearing the screen.
                     glFlush();
                     shapes.clear();
+                    break;
+                case M_CLIP_RECT_POINT:
+                    shapetype = RECT_CLIP_POINT;
+                    rectVerticesCounter = 0;
+                    delete shapeClipper;
+                    break;
+                case M_CLIP_RECT_LINE:
+                    shapetype = RECT_CLIP_LINE;
+                    rectVerticesCounter = 0;
+                    delete shapeClipper;
+                    break;
+                case M_CLIP_RECT_POLYGON:
+                    shapetype = RECT_CLIP_POLYGON;
+                    rectVerticesCounter = 0;
+                    delete shapeClipper;
                     break;
                 case M_SAVE:{
                     string path = browseFile(true);
