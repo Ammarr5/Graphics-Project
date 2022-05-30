@@ -28,8 +28,8 @@ void EllipseDrawerMidpoint::draw(ShapeData* data)
 
     glBegin(GL_POINTS);
     glColor3f(r, g, b);
-    int RA = (int)sqrt(pow((x1 - x2), 2) + pow((y1 - y2), 2));
-    int RB = (int)sqrt(pow((x1 - x3), 2) + pow((y1 - y3), 2));
+    int RA = (int)sqrt(pow((x1 - x3), 2) + pow((y1 - y3), 2));
+    int RB = (int)sqrt(pow((x1 - x2), 2) + pow((y1 - y2), 2));
     double y = RB, x = 0.0, a2 = RA * RA, b2 = RB * RB;
     int d = (int)(b2 - a2 * b + 0.25 * a2);
     Draw4Points(x1, y1, (int)round(x), (int)round(y));
