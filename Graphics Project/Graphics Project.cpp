@@ -246,7 +246,7 @@ LRESULT WINAPI MyWndProc(HWND hwnd, UINT mcode, WPARAM wp, LPARAM lp)
                     i = 0;
                     Shape *ellipse;
                     EllipseDrawer* ed = (EllipseDrawer*)shapeDrawer;
-                    ellipse = new Ellipse(points[0].x, points[0].y, points[1].x, points[1].y, points[2].x, points[2].y, color, ed);
+                    ellipse = new class Ellipse(points[0].x, points[0].y, points[1].x, points[1].y, points[2].x, points[2].y, color, ed);
                     shapes.push_back(ellipse);
                 }
             }

@@ -5,6 +5,8 @@
 #include <Windows.h>
 #include <gl\GLu.h>
 #include <valarray>
+#include <iostream>
+using namespace std;
 
 #pragma comment(lib, "opengl32")
 #pragma comment(lib, "glu32")
@@ -12,6 +14,7 @@
 
 void EllipseDrawerPolar::draw(ShapeData* data)
 {
+    cout<<"Ellipse Polar algorithm selected."<<endl;
     EllipseData ellipseData = *(EllipseData *) data;
     int x1 = ellipseData.x1;
     int y1 = ellipseData.y1;
