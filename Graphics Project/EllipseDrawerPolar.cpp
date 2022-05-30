@@ -41,7 +41,7 @@ void EllipseDrawerPolar::draw(ShapeData* data)
         Draw4Points(x1, y1, x, (int)y);
         theta += dTheta;
     }
-
-
+    glEnd();
+    glFlush();
 
 }

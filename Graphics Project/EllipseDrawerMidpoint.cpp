@@ -60,4 +60,6 @@ void EllipseDrawerMidpoint::draw(ShapeData* data)
         }
         Draw4Points(x1,y1,(int)round(x),(int)round(y));
     }
+    glEnd();
+    glFlush();
 }

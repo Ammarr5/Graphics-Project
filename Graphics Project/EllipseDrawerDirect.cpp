@@ -45,4 +45,6 @@ void EllipseDrawerDirect::draw(ShapeData* data)
         xn = RA * sqrt(1.0 - (double)yn * yn / (RB * RB));
         Draw4Points(x1, y1, (int)round(xn), yn);
     }
+    glEnd();
+    glFlush();
 }
