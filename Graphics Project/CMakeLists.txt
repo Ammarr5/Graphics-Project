@@ -24,7 +24,17 @@ add_executable(Graphics_Project
         ShapeData.h
         ShapeDrawer.cpp
         ShapeDrawer.h
-        targetver.h LineDrawerMidpoint.cpp LineDrawerMidpoint.h LineDrawerParametric.cpp LineDrawerParametric.h CardinalSplineDrawer.cpp CardinalSplineDrawer.h CardinalSplineData.cpp CardinalSplineData.h CardinalSpline.cpp CardinalSpline.h Circle.cpp Circle.h CircleData.cpp CircleData.h CircleDrawer.h CircleDrawerDirect.cpp CircleDrawerDirect.h CircleDrawerPolar.cpp CircleDrawerPolar.h CircleDrawerIterativePolar.cpp CircleDrawerIterativePolar.h CircleDrawerMidpoint.cpp CircleDrawerMidpoint.h CircleDrawerMidpointModified.cpp CircleDrawerMidpointModified.h Ellipse.cpp Ellipse.h EllipseData.cpp EllipseData.h EllipseDrawer.h EllipseDrawerDirect.cpp EllipseDrawerDirect.h EllipseDrawerPolar.cpp EllipseDrawerPolar.h EllipseDrawerMidpoint.cpp EllipseDrawerMidpoint.h)
+        targetver.h LineDrawerMidpoint.cpp LineDrawerMidpoint.h LineDrawerParametric.cpp LineDrawerParametric.h CardinalSplineDrawer.cpp CardinalSplineDrawer.h CardinalSplineData.cpp CardinalSplineData.h CardinalSpline.cpp CardinalSpline.h Circle.cpp Circle.h CircleData.cpp CircleData.h CircleDrawer.h CircleDrawerDirect.cpp CircleDrawerDirect.h CircleDrawerPolar.cpp CircleDrawerPolar.h CircleDrawerIterativePolar.cpp CircleDrawerIterativePolar.h CircleDrawerMidpoint.cpp CircleDrawerMidpoint.h CircleDrawerMidpointModified.cpp CircleDrawerMidpointModified.h Ellipse.cpp Ellipse.h EllipseData.cpp EllipseData.h EllipseDrawer.h EllipseDrawerDirect.cpp EllipseDrawerDirect.h EllipseDrawerPolar.cpp EllipseDrawerPolar.h EllipseDrawerMidpoint.cpp EllipseDrawerMidpoint.h
+        FilledCircle.h
+        FilledCircle.cpp
+        FilledCircleData.h
+        FilledCircleData.cpp
+        FilledCircleDrawer.h
+        FilledCircleByLineDrawer.h
+        FilledCircleByLineDrawer.cpp
+        FilledCircleByCircleDrawer.h
+        FilledCircleByCircleDrawer.cpp
+        )
 
 target_link_libraries(Graphics_Project -lOpenGL32  -lglu32)
 

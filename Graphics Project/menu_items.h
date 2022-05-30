@@ -15,3 +15,5 @@
 #define M_CLIP_SQU_LINE 14
 #define M_CLIP_CIR_POINT 15
 #define M_CLIP_CIR_LINE 16
+#define M_FILL_CIR_LINE 17
+#define M_FILL_CIR_CIR 18
