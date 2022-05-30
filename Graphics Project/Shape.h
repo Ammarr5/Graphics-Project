@@ -3,7 +3,7 @@
 #include "ShapeDrawer.h"
 class Shape
 {
-protected:
+public:
 	ShapeData* shapeData;
 	ShapeDrawer* shapeDrawer;
 public:

@@ -34,6 +34,32 @@ add_executable(Graphics_Project
         FilledCircleByLineDrawer.cpp
         FilledCircleByCircleDrawer.h
         FilledCircleByCircleDrawer.cpp
+        "Clipper.cpp"
+        "Clipper.h"
+        "Rectangle.h"
+        "Rectangle.cpp"
+        "RectangleData.h"
+        "RectangleData.cpp"
+        "RectangleDrawer.cpp"
+        "RectangleDrawer.h"
+        "RectanglePointClipper.h"
+        "RectanglePointClipper.cpp"
+        "PointData.h"
+        "PointData.cpp"
+        "Point.h"
+        "Point.cpp"
+        "PointDrawer.h"
+        "PointDrawer.cpp"
+        "RectangleLineClipper.h"
+        "RectangleLineClipper.cpp"
+        "Polygon.h"
+        "Polygon.cpp"
+        "PolygonDrawer.h"
+        "PolygonDrawer.cpp"
+        "PolygonData.h"
+        "PolygonData.cpp"
+        "RectanglePolygonClipper.h"
+        "RectanglePolygonClipper.cpp"
         )
 
 target_link_libraries(Graphics_Project -lOpenGL32  -lglu32)

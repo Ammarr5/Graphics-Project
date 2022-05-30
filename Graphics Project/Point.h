@@ -1,0 +1,18 @@
+//
+// Created by abdal on 5/29/2022.
+//
+
+#ifndef GRAPHICS_PROJECT_POINT_H
+#define GRAPHICS_PROJECT_POINT_H
+
+
+#include "Shape.h"
+#include "PointData.h"
+
+class Point: public Shape {
+public:
+    Point(PointData*);
+};
+
+
+#endif //GRAPHICS_PROJECT_POINT_H
