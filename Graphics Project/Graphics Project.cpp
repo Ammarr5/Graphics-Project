@@ -29,6 +29,10 @@
 #include "CircleDrawerMidpoint.h"
 #include "CircleDrawerMidpointModified.h"
 #include "Circle.h"
+#include "EllipseDrawerDirect.h"
+#include "EllipseDrawerPolar.h"
+#include "EllipseDrawerMidpoint.h"
+#include "Ellipse.h"
 #include <vector>
 
 #pragma comment(lib,"opengl32")
@@ -100,10 +104,10 @@ LRESULT WINAPI MyWndProc(HWND hwnd, UINT mcode, WPARAM wp, LPARAM lp)
     static Shape* tempShape = nullptr;
     static Clipper* shapeClipper = nullptr;
     static COLORREF color = RGB(1, 1, 0);
-    static Point points[2];
+    static Point points[3];
     static int i = 0;
     static int rectVerticesCounter = 0;
-    enum ShapeType{line,cardinalspline,FilledCir, none_selected, RECT_CLIP_POINT, RECT_CLIP_LINE, RECT_CLIP_POLYGON, circle};
+    enum ShapeType{line,cardinalspline,FilledCir, none_selected, RECT_CLIP_POINT, RECT_CLIP_LINE, RECT_CLIP_POLYGON, circle, ellipse};
     static ShapeType shapetype = none_selected;
     const int numberOfSplinePoints=8;
     static Vector p[numberOfSplinePoints];
@@ -233,6 +237,19 @@ LRESULT WINAPI MyWndProc(HWND hwnd, UINT mcode, WPARAM wp, LPARAM lp)
                     shapes.push_back(circle);
                 }
             }
+            else if (shapetype == ellipse)
+            {
+                points[i].x = LOWORD(lp);
+                points[i].y = HIWORD(lp);
+                i++;
+                if (i == 3) {
+                    i = 0;
+                    Shape *ellipse;
+                    EllipseDrawer* ed = (EllipseDrawer*)shapeDrawer;
+                    ellipse = new Ellipse(points[0].x, points[0].y, points[1].x, points[1].y, points[2].x, points[2].y, color, ed);
+                    shapes.push_back(ellipse);
+                }
+            }
             break;
         }
         case WM_COMMAND: // When menu option is selected
@@ -279,6 +296,21 @@ LRESULT WINAPI MyWndProc(HWND hwnd, UINT mcode, WPARAM wp, LPARAM lp)
                     delete shapeDrawer;
                     shapeDrawer = new CircleDrawerMidpointModified();
                     shapetype = circle;
+                    break;
+                case M_ELLIPSE_DIRECT:
+                    delete shapeDrawer;
+                    shapeDrawer = new EllipseDrawerDirect();
+                    shapetype = ellipse;
+                    break;
+                case M_ELLIPSE_POLAR:
+                    delete shapeDrawer;
+                    shapeDrawer = new EllipseDrawerPolar();
+                    shapetype = ellipse;
+                    break;
+                case M_ELLIPSE_MIDPOINT:
+                    delete shapeDrawer;
+                    shapeDrawer = new EllipseDrawerMidpoint();
+                    shapetype = ellipse;
                     break;
                 case M_FILL_CIR_LINE:
                     delete shapeDrawer;
@@ -439,8 +471,9 @@ void populateMenus(HWND hwnd) {
     HMENU hRectClipping; // Rectangle Clipping submenu
     HMENU hSquClipping; // Square Clipping submenu
     HMENU hCirClipping; // Circle Clipping submenu
-    HMENU hFillCircleMenu; //Fill Circle by submenu
-    HMENU hCircleMenu; //Circle submenu
+    HMENU hFillCircleMenu; // Fill Circle submenu
+    HMENU hCircleMenu; // Circle submenu
+    HMENU hEllipseMenu; // Ellipse submenu
 
     hMenubar = CreateMenu();
     hMenu = CreateMenu();
@@ -450,6 +483,7 @@ void populateMenus(HWND hwnd) {
     hCirClipping = CreateMenu();
     hFillCircleMenu = CreateMenu();
     hCircleMenu = CreateMenu();
+    hEllipseMenu = CreateMenu();
 
     AppendMenuW(hMenu, MF_STRING, M_SAVE, L"&Save");
     AppendMenuW(hMenu, MF_STRING, M_LOAD, L"&Load");
@@ -467,6 +501,10 @@ void populateMenus(HWND hwnd) {
     AppendMenuW(hCircleMenu, MF_STRING, M_CIRCLE_ITER_POLAR, L"&Iterative Polar");
     AppendMenuW(hCircleMenu, MF_STRING, M_CIRCLE_MIDPOINT, L"&Midpoint");
     AppendMenuW(hCircleMenu, MF_STRING, M_CIRCLE_MIDPOINT_MODIFIED, L"&Midpoint modified");
+    AppendMenuW(hMenu, MF_STRING | MF_POPUP, (UINT_PTR)hEllipseMenu, L"&Ellipse"); // Ellipse submenu nested to hLineMenu
+    AppendMenuW(hEllipseMenu, MF_STRING, M_ELLIPSE_DIRECT, L"&Direct"); // Notice now we append to hEllipseMenu not hMenu
+    AppendMenuW(hEllipseMenu, MF_STRING, M_ELLIPSE_POLAR, L"&Polar");
+    AppendMenuW(hEllipseMenu, MF_STRING, M_ELLIPSE_MIDPOINT, L"&Midpoint");
     AppendMenuW(hMenubar, MF_POPUP, (UINT_PTR)hMenu, L"&Menu");
     AppendMenuW(hMenu, MF_STRING, M_CARDINAL_SPLINE, L"&Cardinal Spline Curve");
     AppendMenuW(hMenu, MF_STRING | MF_POPUP, (UINT_PTR)hFillCircleMenu, L"&Fill Circle with"); // Filled Circle submenu nested to hLineMenu
