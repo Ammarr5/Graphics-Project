@@ -4,12 +4,15 @@
 #include <Windows.h>
 #include <gl\GL.h>
 #include <gl\GLu.h>
+#include <iostream>
+using namespace std;
 
 #pragma comment(lib,"opengl32")
 #pragma comment(lib,"glu32")
 
 
 void LineDrawerDDA::draw(ShapeData* data) {
+    cout<<"Line DDA algorithm selected."<<endl;
     LineData lData = *(LineData *) data;
     int x1 = lData.x1;
     int y1 = lData.y1;

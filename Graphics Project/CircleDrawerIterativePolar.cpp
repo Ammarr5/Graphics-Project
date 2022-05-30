@@ -4,12 +4,15 @@
 #include <Windows.h>
 #include <gl\GLu.h>
 #include <valarray>
+#include <iostream>
+using namespace std;
 
 #pragma comment(lib, "opengl32")
 #pragma comment(lib, "glu32")
 
 void CircleDrawerIterativePolar::draw(ShapeData* data)
 {
+    cout<<"Circle Iterative Polar algorithm selected."<<endl;
     CircleData circleData = *(CircleData *) data;
     int x1 = circleData.x1;
     int y1 = circleData.y1;
@@ -35,4 +38,6 @@ void CircleDrawerIterativePolar::draw(ShapeData* data)
         x = x * cdTheta - y * sdTheta;
         Draw8Points(x1, y1, (int)round(x), (int)round(y));
     }
+    glEnd();
+    glFlush();
 }

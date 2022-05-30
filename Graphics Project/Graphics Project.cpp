@@ -103,7 +103,7 @@ LRESULT WINAPI MyWndProc(HWND hwnd, UINT mcode, WPARAM wp, LPARAM lp)
     static Point points[2];
     static int i = 0;
     static int rectVerticesCounter = 0;
-    enum ShapeType{line,cardinalspline,FilledCir, none_selected, RECT_CLIP_POINT, RECT_CLIP_LINE, RECT_CLIP_POLYGON, Circle};
+    enum ShapeType{line,cardinalspline,FilledCir, none_selected, RECT_CLIP_POINT, RECT_CLIP_LINE, RECT_CLIP_POLYGON, circle};
     static ShapeType shapetype = none_selected;
     const int numberOfSplinePoints=8;
     static Vector p[numberOfSplinePoints];
@@ -131,7 +131,7 @@ LRESULT WINAPI MyWndProc(HWND hwnd, UINT mcode, WPARAM wp, LPARAM lp)
                 if (i == 2) {
                     i = 0;
                     Shape *line;
-                    LineDrawer* ld = (LineDrawerDDA*)shapeDrawer;
+                    LineDrawer* ld = (LineDrawer*)shapeDrawer;
                     line = new Line(points[0].x, points[0].y, points[1].x, points[1].y, color, ld);
                     shapes.push_back(line);
                 }
@@ -157,7 +157,7 @@ LRESULT WINAPI MyWndProc(HWND hwnd, UINT mcode, WPARAM wp, LPARAM lp)
                 if (i == 2) {
                     i = 0;
                     Shape *fillCir;
-                    FilledCircleDrawer* fd = (FilledCircleByLineDrawer*)shapeDrawer;
+                    FilledCircleDrawer* fd = (FilledCircleDrawer*)shapeDrawer;
                     fillCir = new FilledCircle(points[0].x, points[0].y, points[1].x, points[1].y, color, fd);
                     shapes.push_back(fillCir);
                 }
@@ -220,7 +220,7 @@ LRESULT WINAPI MyWndProc(HWND hwnd, UINT mcode, WPARAM wp, LPARAM lp)
                     }
                 }
             }
-            else if (shapetype == Circle)
+            else if (shapetype == circle)
             {
                 points[i].x = LOWORD(lp);
                 points[i].y = HIWORD(lp);
@@ -228,7 +228,7 @@ LRESULT WINAPI MyWndProc(HWND hwnd, UINT mcode, WPARAM wp, LPARAM lp)
                 if (i == 2) {
                     i = 0;
                     Shape *circle;
-                    CircleDrawer* cd = (CircleDrawerDirect*)shapeDrawer;
+                    CircleDrawer* cd = (CircleDrawer*)shapeDrawer;
                     circle = new Circle(points[0].x, points[0].y, points[1].x, points[1].y, color, cd);
                     shapes.push_back(circle);
                 }
@@ -258,27 +258,27 @@ LRESULT WINAPI MyWndProc(HWND hwnd, UINT mcode, WPARAM wp, LPARAM lp)
                 case M_CIRCLE_DIRECT:
                     delete shapeDrawer;
                     shapeDrawer = new CircleDrawerDirect();
-                    shapetype = Circle;
+                    shapetype = circle;
                     break;
                 case M_CIRCLE_POLAR:
                     delete shapeDrawer;
                     shapeDrawer = new CircleDrawerPolar();
-                    shapetype = Circle;
+                    shapetype = circle;
                     break;
                 case M_CIRCLE_ITER_POLAR:
                     delete shapeDrawer;
                     shapeDrawer = new CircleDrawerIterativePolar();
-                    shapetype = Circle;
+                    shapetype = circle;
                     break;
                 case M_CIRCLE_MIDPOINT:
                     delete shapeDrawer;
                     shapeDrawer = new CircleDrawerMidpoint();
-                    shapetype = Circle;
+                    shapetype = circle;
                     break;
                 case M_CIRCLE_MIDPOINT_MODIFIED:
                     delete shapeDrawer;
                     shapeDrawer = new CircleDrawerMidpointModified();
-                    shapetype = Circle;
+                    shapetype = circle;
                     break;
                 case M_FILL_CIR_LINE:
                     delete shapeDrawer;

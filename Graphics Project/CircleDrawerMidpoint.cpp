@@ -1,15 +1,17 @@
 #include "CircleDrawerMidpoint.h"
 #include "CircleData.h"
-
 #include <Windows.h>
 #include <gl\GLu.h>
 #include <valarray>
+#include <iostream>
+using namespace std;
 
 #pragma comment(lib, "opengl32")
 #pragma comment(lib, "glu32")
 
 void CircleDrawerMidpoint::draw(ShapeData* data)
 {
+    cout<<"Circle Midpoint algorithm selected."<<endl;
     CircleData circleData = *(CircleData *) data;
     int x1 = circleData.x1;
     int y1 = circleData.y1;
@@ -39,4 +41,6 @@ void CircleDrawerMidpoint::draw(ShapeData* data)
         x++;
         Draw8Points(x1, y1, x, y);
     }
+    glEnd();
+    glFlush();
 }
