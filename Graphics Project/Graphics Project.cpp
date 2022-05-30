@@ -36,6 +36,7 @@
 #include "EllipseDrawerMidpoint.h"
 #include "Ellipse.h"
 #include "Polygon.h"
+#include "CirclePointClipper.h"
 #include <vector>
 
 #pragma comment(lib,"opengl32")
@@ -106,8 +107,9 @@ LRESULT WINAPI MyWndProc(HWND hwnd, UINT mcode, WPARAM wp, LPARAM lp)
     static COLORREF color = RGB(1, 1, 0);
     static Point1 points[3];
     static int i = 0;
-    static int rectVerticesCounter = 0;
-    enum ShapeType{line,cardinalspline,FilledCir, none_selected, RECT_CLIP_POINT, RECT_CLIP_LINE, RECT_CLIP_POLYGON, circle, ellipse, flood};
+    static int rectVerticesCounter = 0,cirVerticesCounter=0;
+    enum ShapeType{line,cardinalspline,FilledCir, none_selected, RECT_CLIP_POINT, RECT_CLIP_LINE, RECT_CLIP_POLYGON, circle,
+            ellipse, flood,CIR_CLIP_POINT,CIR_CLIP_LINE};
     static ShapeType shapetype = none_selected;
     const int numberOfSplinePoints=8;
     static Vector p[numberOfSplinePoints];
@@ -228,6 +230,25 @@ LRESULT WINAPI MyWndProc(HWND hwnd, UINT mcode, WPARAM wp, LPARAM lp)
                     rectVerticesCounter++;
                     if(rectVerticesCounter == 2) {
                         shapeClipper = new RectanglePolygonClipper(min(points[0].x, points[1].x), min(points[0].y, points[1].y), max(points[0].x, points[1].x), max(points[0].y, points[1].y), color);
+                        shapes.push_back(shapeClipper->getShape());
+                    }
+                }
+            }
+            else if(shapetype == CIR_CLIP_POINT) {
+                if (cirVerticesCounter == 2) {
+                    Shape* pointClipped = nullptr;
+                    if(shapeClipper->clip(new PointData(LOWORD(lp), HIWORD(lp), color), pointClipped)) {
+                        shapes.push_back(pointClipped);
+//                        cout<<*pointClipped<<endl;
+                    }
+                }
+                else {
+                    points[cirVerticesCounter].x = LOWORD(lp);
+                    points[cirVerticesCounter].y = HIWORD(lp);
+                    cirVerticesCounter++;
+                    if (cirVerticesCounter == 2) {
+                        CircleDrawer* cd = (CircleDrawer*)new CircleDrawerDirect();
+                        shapeClipper = new CirclePointClipper(points[0].x,points[0].y,points[1].x, points[1].y, color,cd);
                         shapes.push_back(shapeClipper->getShape());
                     }
                 }
@@ -368,6 +389,16 @@ LRESULT WINAPI MyWndProc(HWND hwnd, UINT mcode, WPARAM wp, LPARAM lp)
                 case M_CLIP_RECT_POLYGON:
                     shapetype = RECT_CLIP_POLYGON;
                     rectVerticesCounter = 0;
+                    delete shapeClipper;
+                    break;
+                case M_CLIP_CIR_POINT:
+                    shapetype = CIR_CLIP_POINT;
+                    cirVerticesCounter = 0;
+                    delete shapeClipper;
+                    break;
+                case M_CLIP_CIR_LINE:
+                    shapetype = CIR_CLIP_LINE;
+                    cirVerticesCounter = 0;
                     delete shapeClipper;
                     break;
                 case M_SAVE:{
