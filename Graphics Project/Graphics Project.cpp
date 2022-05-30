@@ -107,7 +107,7 @@ LRESULT WINAPI MyWndProc(HWND hwnd, UINT mcode, WPARAM wp, LPARAM lp)
     static Point1 points[3];
     static int i = 0;
     static int rectVerticesCounter = 0;
-    enum ShapeType{line,cardinalspline,FilledCir, none_selected, RECT_CLIP_POINT, RECT_CLIP_LINE, RECT_CLIP_POLYGON, circle, ellipse};
+    enum ShapeType{line,cardinalspline,FilledCir, none_selected, RECT_CLIP_POINT, RECT_CLIP_LINE, RECT_CLIP_POLYGON, circle, ellipse, flood};
     static ShapeType shapetype = none_selected;
     const int numberOfSplinePoints=8;
     static Vector p[numberOfSplinePoints];
@@ -590,6 +590,7 @@ void populateMenus(HWND hwnd) {
     HMENU hFillCircleMenu; // Fill Circle submenu
     HMENU hCircleMenu; // Circle submenu
     HMENU hEllipseMenu; // Ellipse submenu
+    HMENU hFloodMenu; // Flood Fill submenu
 
     hMenubar = CreateMenu();
     hMenu = CreateMenu();
@@ -600,6 +601,7 @@ void populateMenus(HWND hwnd) {
     hFillCircleMenu = CreateMenu();
     hCircleMenu = CreateMenu();
     hEllipseMenu = CreateMenu();
+    hFloodMenu = CreateMenu();
 
     AppendMenuW(hMenu, MF_STRING, M_SAVE, L"&Save");
     AppendMenuW(hMenu, MF_STRING, M_LOAD, L"&Load");
@@ -637,6 +639,9 @@ void populateMenus(HWND hwnd) {
     AppendMenuW(hMenu, MF_STRING | MF_POPUP, (UINT_PTR)hCirClipping, L"&Circle Clipping");
     AppendMenuW(hCirClipping, MF_STRING, M_CLIP_CIR_POINT, L"&Point");
     AppendMenuW(hCirClipping, MF_STRING, M_CLIP_CIR_LINE, L"&Line");
+    AppendMenuW(hMenu, MF_STRING | MF_POPUP, (UINT_PTR)hFloodMenu, L"&Flood Fill"); // Flood fill submenu nested to hLineMenu
+    AppendMenuW(hFloodMenu, MF_STRING, M_FLOODFILL_NORMAL, L"&Recursive Flood Fill"); // Notice now we append to hFloodMenu not hMenu
+    AppendMenuW(hFloodMenu, MF_STRING, M_FLOODFILL_NONE, L"&Non-Recursive Flood Fill"); // Notice now we append to hFloodMenu not hMenu
 
     SetMenu(hwnd, hMenubar);
 }
