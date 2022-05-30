@@ -10,6 +10,7 @@
 #include <iostream>
 #include "menu_items.h"
 #include "Line.h"
+#include "Point.h"
 #include "CardinalSpline.h"
 #include "LineDrawerDDA.h"
 #include "LineDrawerMidpoint.h"
@@ -19,6 +20,7 @@
 #include "FilledCircleByCircleDrawer.h"
 #include "Clipper.h"
 #include "RectanglePointClipper.h"
+#include "Rectangle.h"
 #include "cmath"
 #include "PointData.h"
 #include "RectangleLineClipper.h"
@@ -33,19 +35,21 @@
 #include "EllipseDrawerPolar.h"
 #include "EllipseDrawerMidpoint.h"
 #include "Ellipse.h"
+#include "Polygon.h"
 #include <vector>
 
 #pragma comment(lib,"opengl32")
 #pragma comment(lib,"glu32")
 using namespace std;
 
-struct Point{
+struct Point1{
     int x,y;
 };
 
 void populateMenus(HWND);
 string browseFile(bool);
 void saveToFile(ofstream&);
+void loadFromFile(ifstream&);
 vector<Shape*> shapes;
 
 HGLRC InitOpenGl(HDC hdc)
@@ -100,7 +104,7 @@ LRESULT WINAPI MyWndProc(HWND hwnd, UINT mcode, WPARAM wp, LPARAM lp)
     static Shape* tempShape = nullptr;
     static Clipper* shapeClipper = nullptr;
     static COLORREF color = RGB(1, 1, 0);
-    static Point points[3];
+    static Point1 points[3];
     static int i = 0;
     static int rectVerticesCounter = 0;
     enum ShapeType{line,cardinalspline,FilledCir, none_selected, RECT_CLIP_POINT, RECT_CLIP_LINE, RECT_CLIP_POLYGON, circle, ellipse};
@@ -167,9 +171,10 @@ LRESULT WINAPI MyWndProc(HWND hwnd, UINT mcode, WPARAM wp, LPARAM lp)
             }
             else if(shapetype == RECT_CLIP_POINT) {
                 if (rectVerticesCounter == 2) {
-                    Shape* pointClipped;
+                    Shape* pointClipped = nullptr;
                     if(shapeClipper->clip(new PointData(LOWORD(lp), HIWORD(lp), color), pointClipped)) {
                         shapes.push_back(pointClipped);
+//                        cout<<*pointClipped<<endl;
                     }
                 }
                 else {
@@ -178,6 +183,7 @@ LRESULT WINAPI MyWndProc(HWND hwnd, UINT mcode, WPARAM wp, LPARAM lp)
                     rectVerticesCounter++;
                     if (rectVerticesCounter == 2) {
                         shapeClipper = new RectanglePointClipper(min(points[0].x, points[1].x), min(points[0].y, points[1].y), max(points[0].x, points[1].x), max(points[0].y, points[1].y), color);
+                        shapes.push_back(shapeClipper->getShape());
                     }
                 }
             }
@@ -188,8 +194,9 @@ LRESULT WINAPI MyWndProc(HWND hwnd, UINT mcode, WPARAM wp, LPARAM lp)
                     i++;
                     if (i == 2) {
                         i = 0;
-                        if(shapeClipper->clip(new LineData(points[0].x, points[0].y, points[1].x, points[1].y, color), tempShape)) {
-                            shapes.push_back(tempShape);
+                        Shape* s = nullptr;
+                        if(shapeClipper->clip(new LineData(points[0].x, points[0].y, points[1].x, points[1].y, color), s)) {
+                            shapes.push_back(s);
                         }
                     }
                 }
@@ -199,6 +206,7 @@ LRESULT WINAPI MyWndProc(HWND hwnd, UINT mcode, WPARAM wp, LPARAM lp)
                     rectVerticesCounter++;
                     if(rectVerticesCounter == 2) {
                         shapeClipper = new RectangleLineClipper(min(points[0].x, points[1].x), min(points[0].y, points[1].y), max(points[0].x, points[1].x), max(points[0].y, points[1].y), color);
+                        shapes.push_back(shapeClipper->getShape());
                     }
                 }
             }
@@ -208,10 +216,10 @@ LRESULT WINAPI MyWndProc(HWND hwnd, UINT mcode, WPARAM wp, LPARAM lp)
                     i++;
                     if (i == 5) {
                         i = 0;
-                        if(shapeClipper->clip(new PolygonData(polygonLines, color), tempShape)) {
-                            shapes.push_back(tempShape);
+                        Shape* s = nullptr;
+                        if(shapeClipper->clip(new PolygonData(polygonLines, color), s)) {
+                            shapes.push_back(s);
                         }
-                        polygonLines.clear();
                     }
                 }
                 else {
@@ -220,6 +228,7 @@ LRESULT WINAPI MyWndProc(HWND hwnd, UINT mcode, WPARAM wp, LPARAM lp)
                     rectVerticesCounter++;
                     if(rectVerticesCounter == 2) {
                         shapeClipper = new RectanglePolygonClipper(min(points[0].x, points[1].x), min(points[0].y, points[1].y), max(points[0].x, points[1].x), max(points[0].y, points[1].y), color);
+                        shapes.push_back(shapeClipper->getShape());
                     }
                 }
             }
@@ -371,15 +380,9 @@ LRESULT WINAPI MyWndProc(HWND hwnd, UINT mcode, WPARAM wp, LPARAM lp)
                 case M_LOAD:
                     string path = browseFile(false);
                     if (path == ""){break;}
-                    char data[100];
                     ifstream infile;
                     infile.open(path);
-
-                    cout << "Reading from the file" << endl;
-                    infile.getline(&data[0], 100);
-
-                    // write the data at the screen.
-                    cout << data << endl;
+                    loadFromFile(infile);
                     break;
             }
             break;
@@ -464,6 +467,115 @@ void saveToFile(ofstream& ofile) {
         ofile<<(*shape)<<endl;
     }
     ofile.close();
+}
+
+
+void parseLine(ifstream&);
+void parseSpline(ifstream&);
+void parseCircle(ifstream&);
+void parseEllipse(ifstream&);
+void parseRectangle(ifstream&);
+void parsePoint(ifstream&);
+void parsePolygon(ifstream&);
+void loadFromFile(ifstream& ifile) {
+    string shapeName;
+    while(ifile>>shapeName && ifile.ignore()) {
+        if (shapeName == "line") {
+            parseLine(ifile);
+        }
+        else if(shapeName == "cardinalspline") {
+            parseSpline(ifile);
+        }
+        else if(shapeName == "circle") {
+            parseCircle(ifile);
+        }
+        else if(shapeName == "ellipse") {
+            parseEllipse(ifile);
+        }
+        else if(shapeName == "rectangle") {
+            parseRectangle(ifile);
+        }
+        else if(shapeName == "point") {
+            parsePoint(ifile);
+        }
+        else if(shapeName == "polygon") {
+            parsePolygon(ifile);
+        }
+    }
+    ifile.close();
+}
+
+void parseLine(ifstream& ifile) {
+    int x1; int y1; int x2; int y2;
+    int r; int g; int b;
+    ifile>>x1>>y1>>x2>>y2;
+    ifile.ignore(3);
+    ifile>>r>>g>>b;
+    shapes.push_back(new Line(x1, y1, x2, y2, RGB(r, g, b), new LineDrawerDDA()));
+}
+
+void parseSpline(ifstream& ifile) {
+    int n;
+    int r; int g; int b;
+    ifile>>n;
+    Vector p[n];
+    for (int i = 0; i < n; ++i) {
+        ifile>>p[i][0]>>p[i][1];
+    }
+    ifile.ignore(3);
+    ifile>>r>>g>>b;
+    shapes.push_back(new CardinalSpline(p, n, 0.3, RGB(r, g, b), new CardinalSplineDrawer()));
+}
+
+void parseCircle(ifstream& ifile) {
+    int xc; int yc; int x1; int y1;
+    int r; int g; int b;
+    ifile>>xc>>yc>>x1>>y1;
+    ifile.ignore(3);
+    ifile>>r>>g>>b;
+    shapes.push_back(new Circle(xc, yc, x1, y1, RGB(r, g, b), new CircleDrawerMidpointModified()));
+}
+
+void parseEllipse(ifstream& ifile) {
+    int x1; int x2; int x3;
+    int y1; int y2; int y3;
+    int r; int g; int b;
+    ifile>>x1>>y1>>x2>>y2>>x3>>y3;
+    ifile.ignore(3);
+    ifile>>r>>g>>b;
+    shapes.push_back(new class Ellipse(x1, y1, x2, y2, x3, y3, RGB(r, g, b), new EllipseDrawerMidpoint()));
+}
+
+void parseRectangle(ifstream& ifile) {
+    int xt; int yt; int xb; int yb;
+    int r; int g; int b;
+    ifile>>xt>>yt>>xb>>yb;
+    ifile.ignore(3);
+    ifile>>r>>g>>b;
+    shapes.push_back(new class Rectangle(xt, yt, xb, yb, RGB(r, g, b)));
+}
+
+void parsePoint(ifstream& ifile) {
+    int x; int y;
+    int r; int g; int b;
+    ifile>>x>>y;
+    ifile.ignore(3);
+    ifile>>r>>g>>b;
+    shapes.push_back(new Point(new PointData(x, y, RGB(r, g, b))));
+}
+
+void parsePolygon(ifstream& ifile) {
+    int x; int y;
+    int r; int g; int b;
+    vector<PointData*> pd;
+    while(ifile>>x) {
+        ifile>>y;
+        pd.push_back(new PointData(x, y, RGB(0, 0, 0)));
+    }
+    ifile.clear();
+    ifile>>r>>g>>b;
+    cout<<r<<" "<<g<<" "<<b<<endl;
+    shapes.push_back(new class Polygon(pd, RGB(r, g, b)));
 }
 
 // function to add menus to window once created

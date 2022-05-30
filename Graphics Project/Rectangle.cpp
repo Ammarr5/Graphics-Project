@@ -12,6 +12,6 @@ Rectangle::Rectangle(int xt, int yt, int xb, int yb, COLORREF color): Shape(new 
 
 ostream& Rectangle::format(ostream &out, const Shape &c) {
     RectangleData data = *(RectangleData*) shapeData;
-    out<<"rectangle "<<data.xt<<" "<<data.yt<<" "<<data.xb<<" "<<data.xb<<" - "<<((int)GetRValue(data.color))<<" "<<((int)GetGValue(data.color))<<" "<<((int)GetBValue(data.color));
+    out<<"rectangle "<<data.xt<<" "<<data.yt<<" "<<data.xb<<" "<<data.yb<<" - "<<((int)GetRValue(data.color))<<" "<<((int)GetGValue(data.color))<<" "<<((int)GetBValue(data.color));
     return out;
 }
