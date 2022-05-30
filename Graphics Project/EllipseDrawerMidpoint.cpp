@@ -1,15 +1,19 @@
 #include "EllipseDrawerMidpoint.h"
 #include "EllipseData.h"
+#include <cmath>
 
 #include <Windows.h>
 #include <gl\GLu.h>
 #include <valarray>
+#include <iostream>
+using namespace std;
 
 #pragma comment(lib, "opengl32")
 #pragma comment(lib, "glu32")
 
 void EllipseDrawerMidpoint::draw(ShapeData* data)
 {
+    cout<<"Ellipse Midpoint algorithm selected."<<endl;
     EllipseData ellipseData = *(EllipseData *) data;
     int x1 = ellipseData.x1;
     int y1 = ellipseData.y1;
@@ -27,38 +31,40 @@ void EllipseDrawerMidpoint::draw(ShapeData* data)
     glColor3f(r, g, b);
     int RA = (int)sqrt(pow((x1 - x2), 2) + pow((y1 - y2), 2));
     int RB = (int)sqrt(pow((x1 - x3), 2) + pow((y1 - y3), 2));
-    double y = RB, x = 0.0, a2 = RA * RA, b2 = RB * RB;
-    int d = (int)(b2 - a2 * b + 0.25 * a2);
-    Draw4Points(x1, y1, (int)round(x), (int)round(y));
-    while (b2 * x <= a2 * y)
+    double x=0;
+    double y=(int)RB;
+    double dx=0;
+    double dy=(pow(RA,2)*2*RB);
+    double d=(int)(pow(RB,2)-(pow(RA,2)*RB)+lround((0.25*pow(RA,2))+0.5));
+    Draw4Points(x1,y1,(int)x,(int)y);
+    while(dx<dy)
     {
         x++;
-        if (d > 0)
-        {
-            y--;
-            d += (int)(b2 * (2 * x + 3) + a2 * (-2 * y + 2));
-        }
+        dx+=pow(RB,2)*2;
+        if(d<0)
+            d+=(dx+pow(RB,2));
         else
         {
-            d += (int)(b2 * (2 * x + 3));
+            y--;
+            dy-=pow(RA,2)*2;
+            d+=(dx+pow(RB,2)-dy);
         }
-        Draw4Points(x1, y1, (int)round(x), (int)round(y));
+        Draw4Points(x1,y1,(int)x,(int)y);
     }
-    d = (int)((x+0.5) * (x+0.5) * b2 + a2 * (y - 1)*(y-1) - a2 * b2);
-    Draw4Points(x1,y1,(int)round(x),(int)round(y));
-    while(y!=0)
+    d=(int) ((pow(RB,2)*(x+0.5)*(x+0.5))+(pow(RA,2)*pow((y-1),2))-(pow(RA,2)*pow(RB,2)+0.5));
+    while(y>0)
     {
         y--;
-        if (d>0)
-        {
-            d+=(int)(a2 * (-2*y+3));
-        }
+        dy-=pow(RA,2)*2;
+        if(d>=0)
+            d+=(pow(RA,2)-dy);
         else
         {
             x++;
-            d += (int)(b2 *(2*x+2) + a2 * (-2*y+3));
+            dx+=2*pow(RB,2);
+            d+=(dx+pow(RA,2)-dy);
         }
-        Draw4Points(x1,y1,(int)round(x),(int)round(y));
+        Draw4Points(x1,y1,(int)x,(int)y);
     }
     glEnd();
     glFlush();
