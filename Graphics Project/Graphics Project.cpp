@@ -23,6 +23,12 @@
 #include "PointData.h"
 #include "RectangleLineClipper.h"
 #include "RectanglePolygonClipper.h"
+#include "CircleDrawerDirect.h"
+#include "CircleDrawerPolar.h"
+#include "CircleDrawerIterativePolar.h"
+#include "CircleDrawerMidpoint.h"
+#include "CircleDrawerMidpointModified.h"
+#include "Circle.h"
 #include <vector>
 
 #pragma comment(lib,"opengl32")
@@ -97,7 +103,7 @@ LRESULT WINAPI MyWndProc(HWND hwnd, UINT mcode, WPARAM wp, LPARAM lp)
     static Point points[2];
     static int i = 0;
     static int rectVerticesCounter = 0;
-    enum ShapeType{line,cardinalspline,FilledCir, none_selected, RECT_CLIP_POINT, RECT_CLIP_LINE, RECT_CLIP_POLYGON};
+    enum ShapeType{line,cardinalspline,FilledCir, none_selected, RECT_CLIP_POINT, RECT_CLIP_LINE, RECT_CLIP_POLYGON, Circle};
     static ShapeType shapetype = none_selected;
     const int numberOfSplinePoints=8;
     static Vector p[numberOfSplinePoints];
@@ -214,6 +220,19 @@ LRESULT WINAPI MyWndProc(HWND hwnd, UINT mcode, WPARAM wp, LPARAM lp)
                     }
                 }
             }
+            else if (shapetype == Circle)
+            {
+                points[i].x = LOWORD(lp);
+                points[i].y = HIWORD(lp);
+                i++;
+                if (i == 2) {
+                    i = 0;
+                    Shape *circle;
+                    CircleDrawer* cd = (CircleDrawerDirect*)shapeDrawer;
+                    circle = new Circle(points[0].x, points[0].y, points[1].x, points[1].y, color, cd);
+                    shapes.push_back(circle);
+                }
+            }
             break;
         }
         case WM_COMMAND: // When menu option is selected
@@ -235,6 +254,31 @@ LRESULT WINAPI MyWndProc(HWND hwnd, UINT mcode, WPARAM wp, LPARAM lp)
                     delete shapeDrawer;
                     shapeDrawer = new LineDrawerParametric();
                     shapetype = line;
+                    break;
+                case M_CIRCLE_DIRECT:
+                    delete shapeDrawer;
+                    shapeDrawer = new CircleDrawerDirect();
+                    shapetype = Circle;
+                    break;
+                case M_CIRCLE_POLAR:
+                    delete shapeDrawer;
+                    shapeDrawer = new CircleDrawerPolar();
+                    shapetype = Circle;
+                    break;
+                case M_CIRCLE_ITER_POLAR:
+                    delete shapeDrawer;
+                    shapeDrawer = new CircleDrawerIterativePolar();
+                    shapetype = Circle;
+                    break;
+                case M_CIRCLE_MIDPOINT:
+                    delete shapeDrawer;
+                    shapeDrawer = new CircleDrawerMidpoint();
+                    shapetype = Circle;
+                    break;
+                case M_CIRCLE_MIDPOINT_MODIFIED:
+                    delete shapeDrawer;
+                    shapeDrawer = new CircleDrawerMidpointModified();
+                    shapetype = Circle;
                     break;
                 case M_FILL_CIR_LINE:
                     delete shapeDrawer;
@@ -396,6 +440,7 @@ void populateMenus(HWND hwnd) {
     HMENU hSquClipping; // Square Clipping submenu
     HMENU hCirClipping; // Circle Clipping submenu
     HMENU hFillCircleMenu; //Fill Circle by submenu
+    HMENU hCircleMenu; //Circle submenu
 
     hMenubar = CreateMenu();
     hMenu = CreateMenu();
@@ -404,6 +449,7 @@ void populateMenus(HWND hwnd) {
     hSquClipping = CreateMenu();
     hCirClipping = CreateMenu();
     hFillCircleMenu = CreateMenu();
+    hCircleMenu = CreateMenu();
 
     AppendMenuW(hMenu, MF_STRING, M_SAVE, L"&Save");
     AppendMenuW(hMenu, MF_STRING, M_LOAD, L"&Load");
@@ -415,9 +461,15 @@ void populateMenus(HWND hwnd) {
     AppendMenuW(hLineMenu, MF_STRING, M_LINE_DDA, L"&DDA"); // Notice now we append to hLineMenu not hMenu
     AppendMenuW(hLineMenu, MF_STRING, M_LINE_MP, L"&Midpoint");
     AppendMenuW(hLineMenu, MF_STRING, M_LINE_PARAM, L"&Parametric");
+    AppendMenuW(hMenu, MF_STRING | MF_POPUP, (UINT_PTR)hCircleMenu, L"&Circle"); // Circle submenu nested to hLineMenu
+    AppendMenuW(hCircleMenu, MF_STRING, M_CIRCLE_DIRECT, L"&Direct"); // Notice now we append to hCircleMenu not hMenu
+    AppendMenuW(hCircleMenu, MF_STRING, M_CIRCLE_POLAR, L"&Polar");
+    AppendMenuW(hCircleMenu, MF_STRING, M_CIRCLE_ITER_POLAR, L"&Iterative Polar");
+    AppendMenuW(hCircleMenu, MF_STRING, M_CIRCLE_MIDPOINT, L"&Midpoint");
+    AppendMenuW(hCircleMenu, MF_STRING, M_CIRCLE_MIDPOINT_MODIFIED, L"&Midpoint modified");
     AppendMenuW(hMenubar, MF_POPUP, (UINT_PTR)hMenu, L"&Menu");
     AppendMenuW(hMenu, MF_STRING, M_CARDINAL_SPLINE, L"&Cardinal Spline Curve");
-    AppendMenuW(hMenu, MF_STRING | MF_POPUP, (UINT_PTR)hFillCircleMenu, L"&Fill Circle with"); // Line submenu nested to hLineMenu
+    AppendMenuW(hMenu, MF_STRING | MF_POPUP, (UINT_PTR)hFillCircleMenu, L"&Fill Circle with"); // Filled Circle submenu nested to hLineMenu
     AppendMenuW(hFillCircleMenu, MF_STRING, M_FILL_CIR_LINE, L"&Lines");
     AppendMenuW(hFillCircleMenu, MF_STRING, M_FILL_CIR_CIR, L"&Circles");
     AppendMenuW(hMenu, MF_SEPARATOR, 0, NULL);
