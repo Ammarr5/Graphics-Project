@@ -45,12 +45,8 @@ struct Point{
 
 void populateMenus(HWND);
 string browseFile(bool);
+void saveToFile(ofstream&);
 vector<Shape*> shapes;
-
-template<typename Base, typename T>
-inline bool instanceof(const T *ptr) {
-    return dynamic_cast<const Base*>(ptr) != nullptr;
-}
 
 HGLRC InitOpenGl(HDC hdc)
 {
@@ -367,9 +363,7 @@ LRESULT WINAPI MyWndProc(HWND hwnd, UINT mcode, WPARAM wp, LPARAM lp)
                     if (path == ""){break;}
                     ofstream ofile;
                     ofile.open(path);
-                    for(Shape* shape : shapes) {
-                        cout<<instanceof<Line>(shape)<<endl;
-                    }
+                    saveToFile(ofile);
                     break;}
                 case M_LOAD:
                     string path = browseFile(false);
@@ -460,6 +454,13 @@ string browseFile(bool save) {
     wstring ws(szFile);
     string path(ws.begin(), ws.end());
     return path;
+}
+
+void saveToFile(ofstream& ofile) {
+    for(Shape* shape : shapes) {
+        ofile<<(*shape)<<endl;
+    }
+    ofile.close();
 }
 
 // function to add menus to window once created
