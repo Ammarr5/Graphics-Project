@@ -9,7 +9,7 @@ ostream& CardinalSpline::format(ostream &out, const Shape &c) {
     CardinalSplineData data = *(CardinalSplineData*) shapeData;
     out<<"cardinalspline "<<data.n;
     for (int i = 0; i < data.n; ++i) {
-        cout<<" "<<data.points[i][0]<<" "<<data.points[i][1];
+        out<<" "<<data.points[i][0]<<" "<<data.points[i][1];
     }
     out<<" - "<<((int)GetRValue(data.color))<<" "<<((int)GetGValue(data.color))<<" "<<((int)GetBValue(data.color));
     return out;
