@@ -37,6 +37,7 @@ void FilledCircleByCircleDrawer::fill(ShapeData * data) {
     int yc = fData.yc;
     int x = fData.x;
     int y = fData.y;
+    int q = fData.q;
     COLORREF color = fData.color;
     double radius= calculateRadius(xc,yc,x,y);
 
@@ -46,12 +47,8 @@ void FilledCircleByCircleDrawer::fill(ShapeData * data) {
 
     glBegin(GL_POINTS);
     glColor3f(r, g, b);
-    int quarter;
-    cout<<"Enter the number of quarter you want to fill with circles:"<<endl;
-    cin>>quarter;
-    fData.q=quarter;
     radius--;
-    if(quarter==1){
+    if(q==1){
         while(radius>0) {
             int x1 = 0;
             double y1 = radius;
@@ -64,7 +61,7 @@ void FilledCircleByCircleDrawer::fill(ShapeData * data) {
             radius--;
         }
     }
-    else if(quarter==2){
+    else if(q==2){
         while(radius>0) {
             int x1 = 0;
             double y1 = radius;
@@ -77,7 +74,7 @@ void FilledCircleByCircleDrawer::fill(ShapeData * data) {
             radius--;
         }
     }
-    else if(quarter==3){
+    else if(q==3){
         while(radius>0) {
             int x1 = 0;
             double y1 = radius;
@@ -90,7 +87,7 @@ void FilledCircleByCircleDrawer::fill(ShapeData * data) {
             radius--;
         }
     }
-    else if(quarter==4){
+    else if(q==4){
         while(radius>0) {
             int x1 = 0;
             double y1 = radius;
@@ -108,11 +105,13 @@ void FilledCircleByCircleDrawer::fill(ShapeData * data) {
 }
 
 void FilledCircleByCircleDrawer::draw(ShapeData* data){
+    cout<<"Fill Circle quarter by circles Selected."<<endl;
     FilledCircleData fData = *(FilledCircleData *) data;
     int xc = fData.xc;
     int yc = fData.yc;
     int x = fData.x;
     int y = fData.y;
+    int q = fData.q;
     COLORREF color = fData.color;
     double radius= calculateRadius(xc,yc,x,y);
 

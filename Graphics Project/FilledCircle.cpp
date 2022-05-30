@@ -3,8 +3,8 @@
 #include "FilledCircleDrawer.h"
 #include "FilledCircleByLineDrawer.h"
 
-FilledCircle::FilledCircle(int xc, int yc, int x, int y, COLORREF color, FilledCircleDrawer* drawer=new FilledCircleByLineDrawer())
-            :Shape(new FilledCircleData(xc, yc, x, y, color), drawer) {
+FilledCircle::FilledCircle(int xc, int yc, int x, int y, int q, COLORREF color, FilledCircleDrawer* drawer=new FilledCircleByLineDrawer())
+            :Shape(new FilledCircleData(xc, yc, x, y, q, color), drawer) {
     draw();
 }
 

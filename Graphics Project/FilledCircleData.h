@@ -4,5 +4,5 @@
 class FilledCircleData:public ShapeData {
 public:
     int xc,yc,x,y,q;
-    FilledCircleData(int,int,int,int,COLORREF);
+    FilledCircleData(int,int,int,int,int,COLORREF);
 };

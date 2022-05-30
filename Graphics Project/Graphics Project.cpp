@@ -158,7 +158,10 @@ LRESULT WINAPI MyWndProc(HWND hwnd, UINT mcode, WPARAM wp, LPARAM lp)
                     i = 0;
                     Shape *fillCir;
                     FilledCircleDrawer* fd = (FilledCircleDrawer*)shapeDrawer;
-                    fillCir = new FilledCircle(points[0].x, points[0].y, points[1].x, points[1].y, color, fd);
+                    int quarter;
+                    cout<<"Enter the number of quarter you want to fill:"<<endl;
+                    cin>>quarter;
+                    fillCir = new FilledCircle(points[0].x, points[0].y, points[1].x, points[1].y, quarter, color, fd);
                     shapes.push_back(fillCir);
                 }
             }
