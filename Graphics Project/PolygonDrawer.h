@@ -18,6 +18,8 @@ public:
     void DrawSanLines(pair<int, int>*, COLORREF);
     void ScanEdge(PointData*, PointData*, pair<int, int>*);
     void InitEntries(pair<int, int>*);
+    void nonConvexFilling(ShapeData*);
+
 };
 
 

@@ -371,6 +371,21 @@ LRESULT WINAPI MyWndProc(HWND hwnd, UINT mcode, WPARAM wp, LPARAM lp)
                 }
                 else i++;
             }
+            else if (shapetype == polyNonConvex)
+            {
+                polygonLines.push_back(new PointData(LOWORD(lp), HIWORD(lp), color));
+                if (i == polygonPoints - 1) {
+                    Shape *polygon;
+                    PolygonDrawer* pd = (PolygonDrawer*)shapeDrawer;
+                    vector<PointData*> cur_points = polygonLines;
+                    polygon = new class Polygon(cur_points, color);
+                    pd->nonConvexFilling(new PolygonData(cur_points, color));
+                    i = 0;
+                    shapes.push_back(polygon);
+                    polygonLines.clear();
+                }
+                else i++;
+            }
             break;
         }
         case WM_COMMAND: // When menu option is selected
@@ -475,6 +490,11 @@ LRESULT WINAPI MyWndProc(HWND hwnd, UINT mcode, WPARAM wp, LPARAM lp)
                     delete shapeDrawer;
                     shapeDrawer = new PolygonDrawer();
                     shapetype = polyConvex;
+                    break;
+                case M_NON_CONVEX:
+                    delete shapeDrawer;
+                    shapeDrawer = new PolygonDrawer();
+                    shapetype = polyNonConvex;
                     break;
                 case M_CLEAR_SCREEN:
                     glClear(GL_COLOR_BUFFER_BIT); // Clearing the screen.
