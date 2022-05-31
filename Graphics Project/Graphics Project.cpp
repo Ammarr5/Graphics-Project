@@ -423,11 +423,29 @@ LRESULT WINAPI MyWndProc(HWND hwnd, UINT mcode, WPARAM wp, LPARAM lp)
             }
             else if (shapetype == FILL_SQR_HER)
             {
-
+                    points[rectVerticesCounter].x = LOWORD(lp);
+                    points[rectVerticesCounter].y = HIWORD(lp);
+                    rectVerticesCounter++;
+                    if (rectVerticesCounter == 2) {
+                        int xt = min(points[0].x, points[1].x);
+                        int yt = min(points[0].y, points[1].y);
+                        int xb = max(points[0].x, points[1].x);
+                        int sideLength = xb - xt;
+                        class Rectangle* rect = new class Rectangle(xt, yt, xt+sideLength, yt+sideLength, color);
+                        shapes.push_back(rect);
+                        rect->fillWithHermite();
+                    }
             }
             else if (shapetype == FILL_REC_BEZ)
             {
-
+                points[rectVerticesCounter].x = LOWORD(lp);
+                points[rectVerticesCounter].y = HIWORD(lp);
+                rectVerticesCounter++;
+                if(rectVerticesCounter == 2) {
+                    class Rectangle* rect = new class Rectangle(min(points[0].x, points[1].x), min(points[0].y, points[1].y), max(points[0].x, points[1].x), max(points[0].y, points[1].y), color);
+                    shapes.push_back(rect);
+                    rect->fillWithBezier();
+                }
             }
             break;
         }
@@ -605,9 +623,11 @@ LRESULT WINAPI MyWndProc(HWND hwnd, UINT mcode, WPARAM wp, LPARAM lp)
                     shapetype = floodNone;
                     break;
                 case M_FILL_SQR_HER:
+                    rectVerticesCounter = 0;
                     shapetype = FILL_SQR_HER;
                     break;
                 case M_FILL_REC_BEZ:
+                    rectVerticesCounter = 0;
                     shapetype = FILL_REC_BEZ;
                     break;
             }
