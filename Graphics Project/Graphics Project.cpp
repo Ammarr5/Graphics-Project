@@ -109,6 +109,7 @@ LRESULT WINAPI MyWndProc(HWND hwnd, UINT mcode, WPARAM wp, LPARAM lp)
     static Clipper* shapeClipper = nullptr;
     static COLORREF color = RGB(1, 1, 0);
     static Point1 points[3];
+    static int last_x, last_y;
     static int i = 0;
     static int rectVerticesCounter = 0,cirVerticesCounter=0;
     enum ShapeType{line,cardinalspline,FilledCir, none_selected, RECT_CLIP_POINT, RECT_CLIP_LINE, RECT_CLIP_POLYGON, circle,
@@ -138,6 +139,7 @@ LRESULT WINAPI MyWndProc(HWND hwnd, UINT mcode, WPARAM wp, LPARAM lp)
             if(shapetype==line) {
                 points[i].x = LOWORD(lp);
                 points[i].y = HIWORD(lp);
+                last_x = points[i].x, last_y = points[i].y;
                 i++;
                 if (i == 2) {
                     i = 0;
@@ -292,6 +294,7 @@ LRESULT WINAPI MyWndProc(HWND hwnd, UINT mcode, WPARAM wp, LPARAM lp)
             {
                 points[i].x = LOWORD(lp);
                 points[i].y = HIWORD(lp);
+                last_x = points[i].x, last_y = points[i].y;
                 i++;
                 if (i == 2) {
                     i = 0;
@@ -371,8 +374,9 @@ LRESULT WINAPI MyWndProc(HWND hwnd, UINT mcode, WPARAM wp, LPARAM lp)
                 i++;
                 if (i == 1) {
                     i = 0;
-                    class FloodFill floodFillNormal;
-                    FloodFill::FloodFillNormal(points[0].x, points[0].y, Cb, color);
+                    COLORREF old = RGB(1, 1, 1);
+                    class FloodFill *ff = new class FloodFill();
+                    ff->FloodFillRecursive(hdc, points[0].x, points[0].y, old, color);
                 }
             }
             else if (shapetype == floodNone)
@@ -382,12 +386,9 @@ LRESULT WINAPI MyWndProc(HWND hwnd, UINT mcode, WPARAM wp, LPARAM lp)
                 i++;
                 if (i == 1) {
                     i = 0;
-                    FloodFill::Color old_color, new_color;
-                    glReadPixels(points[0].x, points[0].y, 1, 1, GL_RGB, GL_FLOAT, &old_color);
-                    new_color.red = (float) GetRValue(color) / 255;
-                    new_color.green = (float) GetGValue(color) / 255;
-                    new_color.blue = (float) GetBValue(color) / 255;
-                    FloodFill::FloodFillRecursive(points[0].x, points[0].y, old_color, new_color);
+                    COLORREF old = RGB(1, 1, 1);
+                    class FloodFill *ff = new class FloodFill();
+                    ff->FloodFillNormal(hdc, points[0].x, points[0].y, old, color);
                 }
             }
             else if (shapetype == polyConvex)
