@@ -29,3 +29,5 @@
 #define M_FLOODFILL_NONE 28
 #define M_CONVEX 29
 #define M_NON_CONVEX 30
+#define M_FILL_SQR_HER 31
+#define M_FILL_REC_BEZ 32

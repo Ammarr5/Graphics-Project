@@ -39,6 +39,7 @@
 #include "PolygonDrawer.h"
 #include "CirclePointClipper.h"
 #include "FloodFill.h"
+#include "CircleLineClipper.h"
 #include <vector>
 
 #pragma comment(lib,"opengl32")
@@ -111,7 +112,8 @@ LRESULT WINAPI MyWndProc(HWND hwnd, UINT mcode, WPARAM wp, LPARAM lp)
     static int i = 0;
     static int rectVerticesCounter = 0,cirVerticesCounter=0;
     enum ShapeType{line,cardinalspline,FilledCir, none_selected, RECT_CLIP_POINT, RECT_CLIP_LINE, RECT_CLIP_POLYGON, circle,
-            ellipse, floodNormal, floodNone,CIR_CLIP_POINT,CIR_CLIP_LINE, SQU_CLIP_LINE, SQU_CLIP_POINT, polyConvex, polyNonConvex};
+            ellipse, floodNormal, floodNone,CIR_CLIP_POINT,CIR_CLIP_LINE, SQU_CLIP_LINE, SQU_CLIP_POINT, polyConvex, polyNonConvex,
+            FILL_SQR_HER,FILL_REC_BEZ};
     static ShapeType shapetype = none_selected;
     const int numberOfSplinePoints=8;
     static Vector p[numberOfSplinePoints];
@@ -258,6 +260,34 @@ LRESULT WINAPI MyWndProc(HWND hwnd, UINT mcode, WPARAM wp, LPARAM lp)
                     }
                 }
             }
+            else if (shapetype == CIR_CLIP_LINE) {
+                if (cirVerticesCounter == 2) {
+                    points[i].x = LOWORD(lp);
+                    points[i].y = HIWORD(lp);
+                    i++;
+                    if (i == 2) {
+                        i = 0;
+                        Shape* s = nullptr;
+                        if (shapeClipper->clip(new LineData(points[0].x, points[0].y, points[1].x, points[1].y, color), s)) {
+                            shapes.push_back(s);
+                        }
+                    }
+                }
+                else {
+                    points[cirVerticesCounter].x = LOWORD(lp);
+                    points[cirVerticesCounter].y = HIWORD(lp);
+                    cirVerticesCounter++;
+                    if (cirVerticesCounter == 2) {
+                        int xc = points[0].x;
+                        int yc = points[0].y;
+                        int x = points[1].x;
+                        int y = points[1].y;
+                        CircleDrawer* cd = (CircleDrawer*)new CircleDrawerDirect();
+                        shapeClipper = new CircleLineClipper(xc, yc, x, y, color, cd);
+                        shapes.push_back(shapeClipper->getShape());
+                    }
+                }
+            }
             else if (shapetype == circle)
             {
                 points[i].x = LOWORD(lp);
@@ -385,6 +415,14 @@ LRESULT WINAPI MyWndProc(HWND hwnd, UINT mcode, WPARAM wp, LPARAM lp)
                     polygonLines.clear();
                 }
                 else i++;
+            }
+            else if (shapetype == FILL_SQR_HER)
+            {
+
+            }
+            else if (shapetype == FILL_REC_BEZ)
+            {
+
             }
             break;
         }
@@ -561,7 +599,12 @@ LRESULT WINAPI MyWndProc(HWND hwnd, UINT mcode, WPARAM wp, LPARAM lp)
                 case M_FLOODFILL_NONE:
                     shapetype = floodNone;
                     break;
-
+                case M_FILL_SQR_HER:
+                    shapetype = FILL_SQR_HER;
+                    break;
+                case M_FILL_REC_BEZ:
+                    shapetype = FILL_REC_BEZ;
+                    break;
             }
             break;
         case WM_CLOSE:
@@ -804,6 +847,7 @@ void populateMenus(HWND hwnd) {
     AppendMenuW(hMenu, MF_STRING, M_COLOR, L"&Select Color");
     AppendMenuW(hMenu, MF_STRING, M_WHITE_BG, L"&White Background");
     AppendMenuW(hMenu, MF_STRING, M_CLEAR_SCREEN, L"&Clear Screen");
+    AppendMenuW(hMenu, MF_SEPARATOR, 0, NULL);
     AppendMenuW(hMenu, MF_STRING | MF_POPUP, (UINT_PTR)hLineMenu, L"&Line"); // Line submenu nested to hLineMenu
     AppendMenuW(hLineMenu, MF_STRING, M_LINE_DDA, L"&DDA"); // Notice now we append to hLineMenu not hMenu
     AppendMenuW(hLineMenu, MF_STRING, M_LINE_MP, L"&Midpoint");
@@ -820,9 +864,18 @@ void populateMenus(HWND hwnd) {
     AppendMenuW(hEllipseMenu, MF_STRING, M_ELLIPSE_MIDPOINT, L"&Midpoint");
     AppendMenuW(hMenubar, MF_POPUP, (UINT_PTR)hMenu, L"&Menu");
     AppendMenuW(hMenu, MF_STRING, M_CARDINAL_SPLINE, L"&Cardinal Spline Curve");
+    AppendMenuW(hMenu, MF_SEPARATOR, 0, NULL);
+    AppendMenuW(hMenu, MF_STRING, M_FILL_SQR_HER, L"&Fill Square with Hermite curve");
+    AppendMenuW(hMenu, MF_STRING, M_FILL_REC_BEZ, L"&Fill Rectangle with Bezier curve");
     AppendMenuW(hMenu, MF_STRING | MF_POPUP, (UINT_PTR)hFillCircleMenu, L"&Fill Circle with"); // Filled Circle submenu nested to hLineMenu
     AppendMenuW(hFillCircleMenu, MF_STRING, M_FILL_CIR_LINE, L"&Lines");
     AppendMenuW(hFillCircleMenu, MF_STRING, M_FILL_CIR_CIR, L"&Circles");
+    AppendMenuW(hMenu, MF_STRING | MF_POPUP, (UINT_PTR)hFloodMenu, L"&Flood Fill"); // Flood fill submenu nested to hLineMenu
+    AppendMenuW(hFloodMenu, MF_STRING, M_FLOODFILL_NORMAL, L"&Recursive Flood Fill"); // Notice now we append to hFloodMenu not hMenu
+    AppendMenuW(hFloodMenu, MF_STRING, M_FLOODFILL_NONE, L"&Non-Recursive Flood Fill"); // Notice now we append to hFloodMenu not hMenu
+    AppendMenuW(hMenu, MF_STRING | MF_POPUP, (UINT_PTR)hPolyFillMenu, L"&Polygon Fill");
+    AppendMenuW(hPolyFillMenu, MF_STRING, M_CONVEX, L"&Convex Fill");
+    AppendMenuW(hPolyFillMenu, MF_STRING, M_NON_CONVEX, L"&Non-Convex Fill");
     AppendMenuW(hMenu, MF_SEPARATOR, 0, NULL);
     AppendMenuW(hMenu, MF_STRING | MF_POPUP, (UINT_PTR)hRectClipping, L"&Rectangle Clipping");
     AppendMenuW(hRectClipping, MF_STRING, M_CLIP_RECT_POINT, L"&Point");
@@ -834,11 +887,5 @@ void populateMenus(HWND hwnd) {
     AppendMenuW(hMenu, MF_STRING | MF_POPUP, (UINT_PTR)hCirClipping, L"&Circle Clipping");
     AppendMenuW(hCirClipping, MF_STRING, M_CLIP_CIR_POINT, L"&Point");
     AppendMenuW(hCirClipping, MF_STRING, M_CLIP_CIR_LINE, L"&Line");
-    AppendMenuW(hMenu, MF_STRING | MF_POPUP, (UINT_PTR)hFloodMenu, L"&Flood Fill"); // Flood fill submenu nested to hLineMenu
-    AppendMenuW(hFloodMenu, MF_STRING, M_FLOODFILL_NORMAL, L"&Recursive Flood Fill"); // Notice now we append to hFloodMenu not hMenu
-    AppendMenuW(hFloodMenu, MF_STRING, M_FLOODFILL_NONE, L"&Non-Recursive Flood Fill"); // Notice now we append to hFloodMenu not hMenu
-    AppendMenuW(hMenu, MF_STRING | MF_POPUP, (UINT_PTR)hPolyFillMenu, L"&Polygon Fill");
-    AppendMenuW(hPolyFillMenu, MF_STRING, M_CONVEX, L"&Convex Fill");
-    AppendMenuW(hPolyFillMenu, MF_STRING, M_NON_CONVEX, L"&Non-Convex Fill");
     SetMenu(hwnd, hMenubar);
 }
