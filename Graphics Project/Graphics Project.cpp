@@ -425,13 +425,9 @@ LRESULT WINAPI MyWndProc(HWND hwnd, UINT mcode, WPARAM wp, LPARAM lp)
                     points[rectVerticesCounter].x = LOWORD(lp);
                     points[rectVerticesCounter].y = HIWORD(lp);
                     rectVerticesCounter++;
-                    if (rectVerticesCounter == 2) {
+                    if (rectVerticesCounter == 1) {
                         rectVerticesCounter = 0;
-                        int xt = min(points[0].x, points[1].x);
-                        int yt = min(points[0].y, points[1].y);
-                        int xb = max(points[0].x, points[1].x);
-                        int sideLength = xb - xt;
-                        class Rectangle* rect = new class Rectangle(xt, yt, xt+sideLength, yt+sideLength, color);
+                        class Rectangle* rect = new class Rectangle(0, 0, 100, 100, color);
                         shapes.push_back(rect);
                         rect->fillWithHermite();
                     }
