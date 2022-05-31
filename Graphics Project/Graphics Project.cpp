@@ -36,6 +36,7 @@
 #include "EllipseDrawerMidpoint.h"
 #include "Ellipse.h"
 #include "Polygon.h"
+#include "PolygonDrawer.h"
 #include "CirclePointClipper.h"
 #include "FloodFill.h"
 #include <vector>
@@ -110,10 +111,11 @@ LRESULT WINAPI MyWndProc(HWND hwnd, UINT mcode, WPARAM wp, LPARAM lp)
     static int i = 0;
     static int rectVerticesCounter = 0,cirVerticesCounter=0;
     enum ShapeType{line,cardinalspline,FilledCir, none_selected, RECT_CLIP_POINT, RECT_CLIP_LINE, RECT_CLIP_POLYGON, circle,
-            ellipse, floodNormal, floodNone,CIR_CLIP_POINT,CIR_CLIP_LINE, SQU_CLIP_LINE, SQU_CLIP_POINT};
+            ellipse, floodNormal, floodNone,CIR_CLIP_POINT,CIR_CLIP_LINE, SQU_CLIP_LINE, SQU_CLIP_POINT, polyConvex, polyNonConvex};
     static ShapeType shapetype = none_selected;
     const int numberOfSplinePoints=8;
     static Vector p[numberOfSplinePoints];
+    const int polygonPoints = 5;
     static vector<PointData*> polygonLines;
     switch (mcode)
     {
@@ -354,6 +356,19 @@ LRESULT WINAPI MyWndProc(HWND hwnd, UINT mcode, WPARAM wp, LPARAM lp)
                     FloodFill::FloodFillRecursive(points[0].x, points[0].y, Cb, color);
                 }
             }
+            else if (shapetype == polyConvex)
+            {
+                polygonLines.push_back(new PointData(LOWORD(lp), HIWORD(lp), color));
+                if (i == polygonPoints - 1) {
+                    Shape *polygon;
+                    PolygonDrawer* pd = (PolygonDrawer*)shapeDrawer;
+                    polygon = new class Polygon(polygonLines, color);
+                    pd->convexFilling(new PolygonData(polygonLines, color));
+                    i = 0;
+                    shapes.push_back(polygon);
+                }
+                else i++;
+            }
             break;
         }
         case WM_COMMAND: // When menu option is selected
@@ -453,6 +468,11 @@ LRESULT WINAPI MyWndProc(HWND hwnd, UINT mcode, WPARAM wp, LPARAM lp)
                     delete shapeDrawer;
                     shapeDrawer = new CardinalSplineDrawer();
                     shapetype = cardinalspline;
+                    break;
+                case M_CONVEX:
+                    delete shapeDrawer;
+                    shapeDrawer = new PolygonDrawer();
+                    shapetype = polyConvex;
                     break;
                 case M_CLEAR_SCREEN:
                     glClear(GL_COLOR_BUFFER_BIT); // Clearing the screen.
@@ -742,6 +762,7 @@ void populateMenus(HWND hwnd) {
     HMENU hCircleMenu; // Circle submenu
     HMENU hEllipseMenu; // Ellipse submenu
     HMENU hFloodMenu; // Flood Fill submenu
+    HMENU hPolyFillMenu; // Polygon Fill submenu
 
     hMenubar = CreateMenu();
     hMenu = CreateMenu();
@@ -753,6 +774,7 @@ void populateMenus(HWND hwnd) {
     hCircleMenu = CreateMenu();
     hEllipseMenu = CreateMenu();
     hFloodMenu = CreateMenu();
+    hPolyFillMenu = CreateMenu();
 
     AppendMenuW(hMenu, MF_STRING, M_SAVE, L"&Save");
     AppendMenuW(hMenu, MF_STRING, M_LOAD, L"&Load");
@@ -793,6 +815,8 @@ void populateMenus(HWND hwnd) {
     AppendMenuW(hMenu, MF_STRING | MF_POPUP, (UINT_PTR)hFloodMenu, L"&Flood Fill"); // Flood fill submenu nested to hLineMenu
     AppendMenuW(hFloodMenu, MF_STRING, M_FLOODFILL_NORMAL, L"&Recursive Flood Fill"); // Notice now we append to hFloodMenu not hMenu
     AppendMenuW(hFloodMenu, MF_STRING, M_FLOODFILL_NONE, L"&Non-Recursive Flood Fill"); // Notice now we append to hFloodMenu not hMenu
-
+    AppendMenuW(hMenu, MF_STRING | MF_POPUP, (UINT_PTR)hPolyFillMenu, L"&Polygon Fill");
+    AppendMenuW(hPolyFillMenu, MF_STRING, M_CONVEX, L"&Convex Fill");
+    AppendMenuW(hPolyFillMenu, MF_STRING, M_NON_CONVEX, L"&Non-Convex Fill");
     SetMenu(hwnd, hMenubar);
 }
