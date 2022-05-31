@@ -388,7 +388,7 @@ LRESULT WINAPI MyWndProc(HWND hwnd, UINT mcode, WPARAM wp, LPARAM lp)
                     i = 0;
                     COLORREF old = RGB(1, 1, 1);
                     class FloodFill *ff = new class FloodFill();
-                    ff->FloodFillNormal(hdc, points[0].x, points[0].y, old, color);
+                    ff->FloodFillNormal(hdc, points[0].x, points[0].y, color, color);
                 }
             }
             else if (shapetype == polyConvex)
