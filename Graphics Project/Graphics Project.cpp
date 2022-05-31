@@ -427,6 +427,7 @@ LRESULT WINAPI MyWndProc(HWND hwnd, UINT mcode, WPARAM wp, LPARAM lp)
                     points[rectVerticesCounter].y = HIWORD(lp);
                     rectVerticesCounter++;
                     if (rectVerticesCounter == 2) {
+                        rectVerticesCounter = 0;
                         int xt = min(points[0].x, points[1].x);
                         int yt = min(points[0].y, points[1].y);
                         int xb = max(points[0].x, points[1].x);
@@ -442,6 +443,7 @@ LRESULT WINAPI MyWndProc(HWND hwnd, UINT mcode, WPARAM wp, LPARAM lp)
                 points[rectVerticesCounter].y = HIWORD(lp);
                 rectVerticesCounter++;
                 if(rectVerticesCounter == 2) {
+                    rectVerticesCounter = 0;
                     class Rectangle* rect = new class Rectangle(min(points[0].x, points[1].x), min(points[0].y, points[1].y), max(points[0].x, points[1].x), max(points[0].y, points[1].y), color);
                     shapes.push_back(rect);
                     rect->fillWithBezier();
@@ -451,17 +453,25 @@ LRESULT WINAPI MyWndProc(HWND hwnd, UINT mcode, WPARAM wp, LPARAM lp)
         }
         case WM_COMMAND: // When menu option is selected
             switch (LOWORD(wp)) { // switch for various menu options
-                case M_WHITE_BG:
+                case M_WHITE_BG: {
+                    glClearColor(1, 1, 1, 1);
                     glClear(GL_COLOR_BUFFER_BIT); // Clearing the screen.
-                    glClearColor(1 ,1 ,1 , 1);
                     glShadeModel(GLU_FLAT);
                     glEnd();
                     glFlush();
-                    new Point(new PointData(0,0,color));
-                    for (int k = 0; k < shapes.size(); k++)
-                        shapes[k]->draw();
+                    ofstream ofile;
+                    ofile.open("D:/tempData.txt");
+                    saveToFile(ofile);
+                    shapes.clear();
+                    ifstream ifile;
+                    ifile.open("D:/tempData.txt");
+                    loadFromFile(ifile);
+//                    new Point(new PointData(0, 0, color));
+//                    for (int k = 0; k < shapes.size(); k++)
+//                        shapes[k]->draw();
                     cout << "white bg";
                     break;
+                }
                 case M_LINE_DDA:
                     delete shapeDrawer;
                     shapeDrawer = new LineDrawerDDA();
