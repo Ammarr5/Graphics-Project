@@ -60,7 +60,7 @@ add_executable(Graphics_Project
         "PolygonData.cpp"
         "RectanglePolygonClipper.h"
         "RectanglePolygonClipper.cpp"
-        FloodFill.cpp FloodFill.h CirclePointClipper.cpp CirclePointClipper.h)
+        FloodFill.cpp FloodFill.h CirclePointClipper.cpp CirclePointClipper.h CircleLineClipper.cpp CircleLineClipper.h)
 
 target_link_libraries(Graphics_Project -lOpenGL32  -lglu32)
 

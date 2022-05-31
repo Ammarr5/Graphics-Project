@@ -374,6 +374,7 @@ LRESULT WINAPI MyWndProc(HWND hwnd, UINT mcode, WPARAM wp, LPARAM lp)
                 case M_CLEAR_SCREEN:
                     glClear(GL_COLOR_BUFFER_BIT); // Clearing the screen.
                     glFlush();
+                    new Point(new PointData(0,0,color));
                     shapes.clear();
                     break;
                 case M_CLIP_RECT_POINT:
