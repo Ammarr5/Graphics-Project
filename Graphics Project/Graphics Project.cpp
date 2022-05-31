@@ -109,7 +109,7 @@ LRESULT WINAPI MyWndProc(HWND hwnd, UINT mcode, WPARAM wp, LPARAM lp)
     static int i = 0;
     static int rectVerticesCounter = 0,cirVerticesCounter=0;
     enum ShapeType{line,cardinalspline,FilledCir, none_selected, RECT_CLIP_POINT, RECT_CLIP_LINE, RECT_CLIP_POLYGON, circle,
-            ellipse, flood,CIR_CLIP_POINT,CIR_CLIP_LINE};
+            ellipse, flood,CIR_CLIP_POINT,CIR_CLIP_LINE, SQU_CLIP_LINE, SQU_CLIP_POINT};
     static ShapeType shapetype = none_selected;
     const int numberOfSplinePoints=8;
     static Vector p[numberOfSplinePoints];
@@ -279,6 +279,55 @@ LRESULT WINAPI MyWndProc(HWND hwnd, UINT mcode, WPARAM wp, LPARAM lp)
                     shapes.push_back(ellipse);
                 }
             }
+            else if(shapetype == SQU_CLIP_LINE) {
+                if(rectVerticesCounter == 2) {
+                    points[i].x = LOWORD(lp);
+                    points[i].y = HIWORD(lp);
+                    i++;
+                    if (i == 2) {
+                        i = 0;
+                        Shape* s = nullptr;
+                        if(shapeClipper->clip(new LineData(points[0].x, points[0].y, points[1].x, points[1].y, color), s)) {
+                            shapes.push_back(s);
+                        }
+                    }
+                }
+                else {
+                    points[rectVerticesCounter].x = LOWORD(lp);
+                    points[rectVerticesCounter].y = HIWORD(lp);
+                    rectVerticesCounter++;
+                    if(rectVerticesCounter == 2) {
+                        int xt = min(points[0].x, points[1].x);
+                        int yt = min(points[0].y, points[1].y);
+                        int xb = max(points[0].x, points[1].x);
+                        int sideLength = xb - xt;
+                        shapeClipper = new RectangleLineClipper(xt, yt, xt+sideLength, yt+sideLength, color);
+                        shapes.push_back(shapeClipper->getShape());
+                    }
+                }
+            }
+            else if(shapetype == SQU_CLIP_POINT) {
+                if (rectVerticesCounter == 2) {
+                    Shape* pointClipped = nullptr;
+                    if(shapeClipper->clip(new PointData(LOWORD(lp), HIWORD(lp), color), pointClipped)) {
+                        shapes.push_back(pointClipped);
+//                        cout<<*pointClipped<<endl;
+                    }
+                }
+                else {
+                    points[rectVerticesCounter].x = LOWORD(lp);
+                    points[rectVerticesCounter].y = HIWORD(lp);
+                    rectVerticesCounter++;
+                    if (rectVerticesCounter == 2) {
+                        int xt = min(points[0].x, points[1].x);
+                        int yt = min(points[0].y, points[1].y);
+                        int xb = max(points[0].x, points[1].x);
+                        int sideLength = xb - xt;
+                        shapeClipper = new RectanglePointClipper(xt, yt, xt+sideLength, yt+sideLength, color);
+                        shapes.push_back(shapeClipper->getShape());
+                    }
+                }
+            }
             break;
         }
         case WM_COMMAND: // When menu option is selected
@@ -409,7 +458,7 @@ LRESULT WINAPI MyWndProc(HWND hwnd, UINT mcode, WPARAM wp, LPARAM lp)
                     ofile.open(path);
                     saveToFile(ofile);
                     break;}
-                case M_LOAD:
+                case M_LOAD:{
                     string path = browseFile(false);
                     if (path == ""){break;}
                     ifstream infile;
@@ -419,6 +468,16 @@ LRESULT WINAPI MyWndProc(HWND hwnd, UINT mcode, WPARAM wp, LPARAM lp)
                     new Point(new PointData(0,0,color));
                     shapes.clear();
                     loadFromFile(infile);
+                    break;}
+                case M_CLIP_SQU_LINE:
+                    shapetype = SQU_CLIP_LINE;
+                    cirVerticesCounter = 0;
+                    delete shapeClipper;
+                    break;
+                case M_CLIP_SQU_POINT:
+                    shapetype = SQU_CLIP_POINT;
+                    cirVerticesCounter = 0;
+                    delete shapeClipper;
                     break;
             }
             break;
