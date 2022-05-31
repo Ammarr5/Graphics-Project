@@ -362,10 +362,12 @@ LRESULT WINAPI MyWndProc(HWND hwnd, UINT mcode, WPARAM wp, LPARAM lp)
                 if (i == polygonPoints - 1) {
                     Shape *polygon;
                     PolygonDrawer* pd = (PolygonDrawer*)shapeDrawer;
-                    polygon = new class Polygon(polygonLines, color);
-                    pd->convexFilling(new PolygonData(polygonLines, color));
+                    vector<PointData*> cur_points = polygonLines;
+                    polygon = new class Polygon(cur_points, color);
+                    pd->convexFilling(new PolygonData(cur_points, color));
                     i = 0;
                     shapes.push_back(polygon);
+                    polygonLines.clear();
                 }
                 else i++;
             }
