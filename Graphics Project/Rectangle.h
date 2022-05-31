@@ -10,6 +10,9 @@
 class Rectangle : public Shape{
 public:
     Rectangle(int, int, int, int, COLORREF);
+    void fill();
+    void fillWithHermite();
+    void fillWithBezier();
     ostream& format(ostream &out, const Shape &c);
 };
 
