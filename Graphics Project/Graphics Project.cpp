@@ -37,6 +37,7 @@
 #include "Ellipse.h"
 #include "Polygon.h"
 #include "CirclePointClipper.h"
+#include "FloodFill.h"
 #include <vector>
 
 #pragma comment(lib,"opengl32")
@@ -109,7 +110,7 @@ LRESULT WINAPI MyWndProc(HWND hwnd, UINT mcode, WPARAM wp, LPARAM lp)
     static int i = 0;
     static int rectVerticesCounter = 0,cirVerticesCounter=0;
     enum ShapeType{line,cardinalspline,FilledCir, none_selected, RECT_CLIP_POINT, RECT_CLIP_LINE, RECT_CLIP_POLYGON, circle,
-            ellipse, flood,CIR_CLIP_POINT,CIR_CLIP_LINE, SQU_CLIP_LINE, SQU_CLIP_POINT};
+            ellipse, floodNormal, floodNone,CIR_CLIP_POINT,CIR_CLIP_LINE, SQU_CLIP_LINE, SQU_CLIP_POINT};
     static ShapeType shapetype = none_selected;
     const int numberOfSplinePoints=8;
     static Vector p[numberOfSplinePoints];
@@ -330,11 +331,42 @@ LRESULT WINAPI MyWndProc(HWND hwnd, UINT mcode, WPARAM wp, LPARAM lp)
                     }
                 }
             }
+            else if (shapetype == floodNormal)
+            {
+                COLORREF Cb = (0, 0, 0);
+                points[i].x = LOWORD(lp);
+                points[i].y = HIWORD(lp);
+                i++;
+                if (i == 1) {
+                    i = 0;
+                    class FloodFill floodFillNormal;
+                    FloodFill::FloodFillNormal(points[0].x, points[0].y, Cb, color);
+                }
+            }
+            else if (shapetype == floodNone)
+            {
+                COLORREF Cb = (0, 0, 0);
+                points[i].x = LOWORD(lp);
+                points[i].y = HIWORD(lp);
+                i++;
+                if (i == 1) {
+                    i = 0;
+                    FloodFill::FloodFillRecursive(points[0].x, points[0].y, Cb, color);
+                }
+            }
             break;
         }
         case WM_COMMAND: // When menu option is selected
             switch (LOWORD(wp)) { // switch for various menu options
                 case M_WHITE_BG:
+                    glClear(GL_COLOR_BUFFER_BIT); // Clearing the screen.
+                    glClearColor(1 ,1 ,1 , 1);
+                    glShadeModel(GLU_FLAT);
+                    glEnd();
+                    glFlush();
+                    new Point(new PointData(0,0,color));
+                    for (int k = 0; k < shapes.size(); k++)
+                        shapes[k]->draw();
                     cout << "white bg";
                     break;
                 case M_LINE_DDA:
@@ -481,6 +513,13 @@ LRESULT WINAPI MyWndProc(HWND hwnd, UINT mcode, WPARAM wp, LPARAM lp)
                     rectVerticesCounter = 0;
                     delete shapeClipper;
                     break;
+                case M_FLOODFILL_NORMAL:
+                    shapetype = floodNormal;
+                    break;
+                case M_FLOODFILL_NONE:
+                    shapetype = floodNone;
+                    break;
+
             }
             break;
         case WM_CLOSE:
