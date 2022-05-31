@@ -414,6 +414,10 @@ LRESULT WINAPI MyWndProc(HWND hwnd, UINT mcode, WPARAM wp, LPARAM lp)
                     if (path == ""){break;}
                     ifstream infile;
                     infile.open(path);
+                    glClear(GL_COLOR_BUFFER_BIT); // Clearing the screen.
+                    glFlush();
+                    new Point(new PointData(0,0,color));
+                    shapes.clear();
                     loadFromFile(infile);
                     break;
             }
