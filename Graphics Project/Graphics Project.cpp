@@ -219,9 +219,11 @@ LRESULT WINAPI MyWndProc(HWND hwnd, UINT mcode, WPARAM wp, LPARAM lp)
                     if (i == 5) {
                         i = 0;
                         Shape* s = nullptr;
-                        if(shapeClipper->clip(new PolygonData(polygonLines, color), s)) {
+                        vector<PointData*> pl = polygonLines;
+                        if(shapeClipper->clip(new PolygonData(pl, color), s)) {
                             shapes.push_back(s);
                         }
+                        polygonLines.clear();
                     }
                 }
                 else {
@@ -572,6 +574,7 @@ void parseEllipse(ifstream&);
 void parseRectangle(ifstream&);
 void parsePoint(ifstream&);
 void parsePolygon(ifstream&);
+void parseFilledCircle(ifstream&);
 void loadFromFile(ifstream& ifile) {
     string shapeName;
     while(ifile>>shapeName && ifile.ignore()) {
@@ -595,6 +598,9 @@ void loadFromFile(ifstream& ifile) {
         }
         else if(shapeName == "polygon") {
             parsePolygon(ifile);
+        }
+        else if(shapeName == "filledcircle") {
+            parseFilledCircle(ifile);
         }
     }
     ifile.close();
@@ -671,6 +677,17 @@ void parsePolygon(ifstream& ifile) {
     ifile>>r>>g>>b;
     cout<<r<<" "<<g<<" "<<b<<endl;
     shapes.push_back(new class Polygon(pd, RGB(r, g, b)));
+}
+
+void parseFilledCircle(ifstream& ifile) {
+    int xc; int yc; int x; int y;
+    int q;
+    int r; int g; int b;
+    ifile>>xc>>yc>>x>>y;
+    ifile>>q;
+    ifile.ignore(3);
+    ifile>>r>>g>>b;
+    shapes.push_back(new FilledCircle(xc, yc, x, y, q, RGB(r, g, b), new FilledCircleByLineDrawer()));
 }
 
 // function to add menus to window once created
