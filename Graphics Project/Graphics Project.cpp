@@ -108,6 +108,7 @@ LRESULT WINAPI MyWndProc(HWND hwnd, UINT mcode, WPARAM wp, LPARAM lp)
     static Shape* tempShape = nullptr;
     static Clipper* shapeClipper = nullptr;
     static COLORREF color = RGB(1, 1, 0);
+    static COLORREF prev = color; // Previous color.
     static Point1 points[3];
     static int last_x, last_y;
     static int i = 0;
@@ -374,9 +375,8 @@ LRESULT WINAPI MyWndProc(HWND hwnd, UINT mcode, WPARAM wp, LPARAM lp)
                 i++;
                 if (i == 1) {
                     i = 0;
-                    COLORREF old = RGB(1, 1, 1);
                     class FloodFill *ff = new class FloodFill();
-                    ff->FloodFillRecursive(hdc, points[0].x, points[0].y, old, color);
+                    ff->FloodFillRecursive(hdc, points[0].x, points[0].y, prev, color);
                 }
             }
             else if (shapetype == floodNone)
@@ -386,9 +386,8 @@ LRESULT WINAPI MyWndProc(HWND hwnd, UINT mcode, WPARAM wp, LPARAM lp)
                 i++;
                 if (i == 1) {
                     i = 0;
-                    COLORREF old = RGB(1, 1, 1);
                     class FloodFill *ff = new class FloodFill();
-                    ff->FloodFillNormal(hdc, points[0].x, points[0].y, color, color);
+                    ff->FloodFillNormal(hdc, points[0].x, points[0].y, prev, color);
                 }
             }
             else if (shapetype == polyConvex)
@@ -538,6 +537,7 @@ LRESULT WINAPI MyWndProc(HWND hwnd, UINT mcode, WPARAM wp, LPARAM lp)
                     shapetype = FilledCir;
                     break;
                 case M_COLOR:
+                    prev = color;
                     CHOOSECOLOR cc;                 // common dialog box structure
                     static COLORREF acrCustClr[16]; // array of custom colors
                     static DWORD rgbCurrent;        // initial color selection
