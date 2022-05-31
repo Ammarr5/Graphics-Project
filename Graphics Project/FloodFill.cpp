@@ -2,35 +2,36 @@
 #include <stack>
 #include <gl\GLu.h>
 #include <valarray>
+#include <iostream>
 
 using namespace std;
 
 #pragma comment(lib, "opengl32")
 #pragma comment(lib, "glu32")
 
-
-
-void FloodFill::FloodFillNormal(int x, int y, COLORREF Cb, COLORREF Cf)
+void FloodFill::FloodFillRecursive(int x, int y, Color Cb, Color Cf)
 {
-    COLORREF color = Cf, color2;
+    Color cur_color;
+    glReadPixels(x, y, 1, 1, GL_RGB, GL_FLOAT, &cur_color);
 
-    float r = (float)GetRValue(color)/255;
-    float g = (float)GetGValue(color)/255;
-    float b = (float)GetBValue(color)/255;
+    //cout << cur_color.red << ' ' << Cb.red << endl;
+    if (cur_color.red != Cb.red || cur_color.green != Cb.green || cur_color.blue != Cb.blue)
+        return;
 
+    //cout << x << ' ' << y << endl;
     glBegin(GL_POINTS);
-    glColor3f(r, g, b);
 
-    glReadPixels(x, y, 1, 1, GL_RGB, GL_FLOAT, &color2);
-    COLORREF C = color2;
-    if(C==Cb || C==Cf)return;
+    glColor3f(Cf.red, Cf.green, Cf.blue);
+
     glVertex2d(x, y);
-    FloodFillNormal(x+1,y,Cb,Cf);
-    FloodFillNormal(x-1,y,Cb,Cf);
-    FloodFillNormal(x,y+1,Cb,Cf);
-    FloodFillNormal(x,y-1,Cb,Cf);
+
     glEnd();
     glFlush();
+
+    FloodFillRecursive(x + 1, y, Cb, Cf);
+    FloodFillRecursive(x - 1, y, Cb, Cf);
+    FloodFillRecursive(x, y + 1, Cb, Cf);
+    FloodFillRecursive(x, y - 1, Cb, Cf);
 }
 struct Vertex
 {
@@ -40,16 +41,17 @@ struct Vertex
     }
 };
 
-void FloodFill::FloodFillRecursive(int x, int y, COLORREF Cb, COLORREF Cf)
+void FloodFill::FloodFillNormal(int x, int y, COLORREF Cb, COLORREF Cf)
 {
-    COLORREF color = Cf, color2;
+    /*
+    Color cur_color;
+    glReadPixels(x, y, 1, 1, GL_RGB, GL_FLOAT, &cur_color);
 
-    float r = (float)GetRValue(color)/255;
-    float g = (float)GetGValue(color)/255;
-    float b = (float)GetBValue(color)/255;
+    if (cur_color.red == Cb.red && cur_color.green == Cb.green && cur_color.blue == Cb.blue)
+        return;
 
     glBegin(GL_POINTS);
-    glColor3f(r, g, b);
+    glColor3f(Cf.red, Cf.green, Cf.blue);
     stack<Vertex> S;
     S.push(Vertex(x,y));
     while(!S.empty())
@@ -68,4 +70,5 @@ void FloodFill::FloodFillRecursive(int x, int y, COLORREF Cb, COLORREF Cf)
     }
     glEnd();
     glFlush();
+     */
 }

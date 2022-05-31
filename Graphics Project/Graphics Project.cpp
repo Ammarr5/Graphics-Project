@@ -377,13 +377,17 @@ LRESULT WINAPI MyWndProc(HWND hwnd, UINT mcode, WPARAM wp, LPARAM lp)
             }
             else if (shapetype == floodNone)
             {
-                COLORREF Cb = (0, 0, 0);
                 points[i].x = LOWORD(lp);
                 points[i].y = HIWORD(lp);
                 i++;
                 if (i == 1) {
                     i = 0;
-                    FloodFill::FloodFillRecursive(points[0].x, points[0].y, Cb, color);
+                    FloodFill::Color old_color, new_color;
+                    glReadPixels(points[0].x, points[0].y, 1, 1, GL_RGB, GL_FLOAT, &old_color);
+                    new_color.red = (float) GetRValue(color) / 255;
+                    new_color.green = (float) GetGValue(color) / 255;
+                    new_color.blue = (float) GetBValue(color) / 255;
+                    FloodFill::FloodFillRecursive(points[0].x, points[0].y, old_color, new_color);
                 }
             }
             else if (shapetype == polyConvex)
