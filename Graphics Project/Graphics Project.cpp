@@ -473,12 +473,12 @@ LRESULT WINAPI MyWndProc(HWND hwnd, UINT mcode, WPARAM wp, LPARAM lp)
                     break;}
                 case M_CLIP_SQU_LINE:
                     shapetype = SQU_CLIP_LINE;
-                    cirVerticesCounter = 0;
+                    rectVerticesCounter = 0;
                     delete shapeClipper;
                     break;
                 case M_CLIP_SQU_POINT:
                     shapetype = SQU_CLIP_POINT;
-                    cirVerticesCounter = 0;
+                    rectVerticesCounter = 0;
                     delete shapeClipper;
                     break;
             }
